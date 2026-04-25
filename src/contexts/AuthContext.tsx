@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         mode: 'business',
       });
     }
-    return { error };
+    return { error, needsEmailConfirmation: !data.session };
   }
 
   async function signOut() {

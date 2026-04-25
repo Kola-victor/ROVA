@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -24,10 +25,12 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    const { error } = await signUp(email, password, fullName);
+    const { error, needsEmailConfirmation } = await signUp(email, password, fullName);
     setLoading(false);
     if (error) {
       setError(error.message || 'Failed to create account. Please try again.');
+    } else if (needsEmailConfirmation) {
+      setSuccessMsg('Account created successfully! Please check your email inbox to confirm your account.');
     } else {
       navigate('/dashboard');
     }
@@ -100,6 +103,16 @@ export default function SignupPage() {
                 color: 'var(--error)', fontSize: 13,
               }}>
                 {error}
+              </div>
+            )}
+
+            {successMsg && (
+              <div style={{
+                padding: '10px 12px', background: 'var(--success-dim)',
+                border: '1px solid rgba(34,197,94,0.2)', borderRadius: 'var(--radius-md)',
+                color: 'var(--success)', fontSize: 13,
+              }}>
+                {successMsg}
               </div>
             )}
 
