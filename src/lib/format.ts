@@ -1,0 +1,29 @@
+export function formatCurrency(amount: number, currency = 'NGN'): string {
+  if (currency === 'NGN') {
+    return `₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+}
+
+export function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+export function formatShortDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
+}
+
+export function formatPercent(value: number): string {
+  return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+}
+
+export function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}

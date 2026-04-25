@@ -1,0 +1,578 @@
+import { useEffect, useState, type FormEvent } from 'react';
+import { Plus, Receipt, Send, Check, Eye, Trash2, X, Download } from 'lucide-react';
+import { supabase, type Invoice } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import { formatCurrency, formatDate } from '../lib/format';
+import { downloadCSV } from '../lib/export';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import Modal from '../components/ui/Modal';
+import Input from '../components/ui/Input';
+
+type InvoiceStatus = Invoice['status'];
+
+const statusVariant: Record<InvoiceStatus, 'default' | 'success' | 'warning' | 'error' | 'info' | 'purple'> = {
+  draft: 'default', sent: 'info', paid: 'success', overdue: 'error', cancelled: 'error',
+};
+
+function downloadInvoicePDF(inv: Invoice, businessName: string) {
+  const items = inv.items || [];
+  const itemRows = items.map(item => `
+    <tr>
+      <td class="item-desc">${item.description}</td>
+      <td class="item-num">${item.quantity}</td>
+      <td class="item-num">${formatCurrency(item.unit_price)}</td>
+      <td class="item-num total-cell">${formatCurrency(item.amount)}</td>
+    </tr>
+  `).join('');
+
+  const statusColor: Record<InvoiceStatus, string> = {
+    draft: '#6b7280', sent: '#3b82f6', paid: '#22c55e', overdue: '#ef4444', cancelled: '#ef4444',
+  };
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Invoice ${inv.invoice_number}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; background: white; font-size: 13px; line-height: 1.5; }
+    .page { max-width: 800px; margin: 0 auto; padding: 48px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+    .brand { display: flex; flex-direction: column; gap: 4px; }
+    .brand-name { font-size: 26px; font-weight: 800; color: #7c3aed; letter-spacing: -0.5px; }
+    .brand-sub { font-size: 12px; color: #6b7280; }
+    .invoice-meta { text-align: right; }
+    .invoice-number { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: ${statusColor[inv.status]}22; color: ${statusColor[inv.status]}; }
+    .divider { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+    .parties { display: flex; justify-content: space-between; margin-bottom: 32px; }
+    .party h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; margin-bottom: 8px; }
+    .party p { font-size: 13px; color: #374151; margin-bottom: 2px; }
+    .party .name { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .dates { display: flex; gap: 40px; margin-bottom: 32px; }
+    .date-item h4 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; margin-bottom: 4px; }
+    .date-item p { font-size: 13px; font-weight: 600; color: #374151; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    thead tr { background: #f9fafb; }
+    th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #6b7280; border-bottom: 2px solid #e5e7eb; }
+    td { padding: 12px 14px; border-bottom: 1px solid #f3f4f6; }
+    .item-desc { color: #1a1a1a; font-weight: 500; }
+    .item-num { text-align: right; color: #374151; }
+    .total-cell { font-weight: 600; color: #1a1a1a; }
+    .totals { margin-left: auto; width: 260px; }
+    .totals-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; color: #6b7280; }
+    .totals-row.grand { font-size: 16px; font-weight: 800; color: #1a1a1a; border-top: 2px solid #e5e7eb; padding-top: 12px; margin-top: 4px; }
+    .totals-row.grand span:last-child { color: #7c3aed; }
+    .notes { margin-top: 32px; padding: 16px; background: #f9fafb; border-radius: 8px; border-left: 3px solid #7c3aed; }
+    .notes h4 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; margin-bottom: 6px; }
+    .notes p { font-size: 12px; color: #6b7280; line-height: 1.6; }
+    .footer { margin-top: 48px; text-align: center; font-size: 11px; color: #d1d5db; border-top: 1px solid #f3f4f6; padding-top: 20px; }
+    @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-name">ROVA</div>
+        <div class="brand-sub">${businessName || 'Financial Operating System'}</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="invoice-number">${inv.invoice_number}</div>
+        <span class="status-badge">${inv.status}</span>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="parties">
+      <div class="party">
+        <h3>Billed To</h3>
+        <p class="name">${inv.client_name}</p>
+        ${inv.client_email ? `<p>${inv.client_email}</p>` : ''}
+        ${inv.client_address ? `<p>${inv.client_address}</p>` : ''}
+      </div>
+    </div>
+
+    <div class="dates">
+      <div class="date-item">
+        <h4>Issue Date</h4>
+        <p>${formatDate(inv.issue_date)}</p>
+      </div>
+      <div class="date-item">
+        <h4>Due Date</h4>
+        <p>${formatDate(inv.due_date)}</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:50%">Description</th>
+          <th style="text-align:right">Qty</th>
+          <th style="text-align:right">Unit Price</th>
+          <th style="text-align:right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemRows || `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No line items</td></tr>`}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div class="totals-row"><span>Subtotal</span><span>${formatCurrency(inv.subtotal)}</span></div>
+      <div class="totals-row"><span>Tax (${inv.tax_rate}%)</span><span>${formatCurrency(inv.tax_amount)}</span></div>
+      <div class="totals-row grand"><span>Total</span><span>${formatCurrency(inv.total)}</span></div>
+    </div>
+
+    ${inv.notes ? `
+    <div class="notes">
+      <h4>Notes</h4>
+      <p>${inv.notes}</p>
+    </div>` : ''}
+
+    <div class="footer">Generated by ROVA · rova.finance</div>
+  </div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=700');
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => {
+    win.focus();
+    win.print();
+  };
+}
+
+export default function InvoicesPage() {
+  const { user, profile } = useAuth();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    client_name: '', client_email: '', client_address: '',
+    due_date: '', tax_rate: '0', notes: '',
+  });
+  const [items, setItems] = useState<{ description: string; quantity: string; unit_price: string }[]>([
+    { description: '', quantity: '1', unit_price: '' }
+  ]);
+
+  useEffect(() => {
+    if (user) loadInvoices();
+  }, [user]);
+
+  async function loadInvoices() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('user_id', user!.id)
+      .order('created_at', { ascending: false });
+    setInvoices(data || []);
+    setLoading(false);
+  }
+
+  async function loadInvoiceWithItems(id: string) {
+    const { data: inv } = await supabase.from('invoices').select('*').eq('id', id).maybeSingle();
+    const { data: itemsData } = await supabase.from('invoice_items').select('*').eq('invoice_id', id);
+    setViewInvoice(inv ? { ...inv, items: itemsData || [] } : null);
+  }
+
+  function calcTotals() {
+    const subtotal = items.reduce((s, item) => s + (Number(item.quantity) || 0) * (Number(item.unit_price) || 0), 0);
+    const taxAmount = subtotal * (Number(form.tax_rate) / 100 || 0);
+    return { subtotal, taxAmount, total: subtotal + taxAmount };
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    const { subtotal, taxAmount, total } = calcTotals();
+    const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+
+    const { data: inv, error } = await supabase.from('invoices').insert({
+      user_id: user!.id,
+      invoice_number: invoiceNumber,
+      client_name: form.client_name,
+      client_email: form.client_email,
+      client_address: form.client_address,
+      issue_date: new Date().toISOString().split('T')[0],
+      due_date: form.due_date,
+      tax_rate: Number(form.tax_rate) || 0,
+      tax_amount: taxAmount,
+      subtotal,
+      total,
+      notes: form.notes,
+      status: 'draft',
+    }).select().maybeSingle();
+
+    if (!error && inv) {
+      const validItems = items.filter(i => i.description && Number(i.unit_price) > 0);
+      await supabase.from('invoice_items').insert(
+        validItems.map(i => ({
+          invoice_id: inv.id,
+          description: i.description,
+          quantity: Number(i.quantity),
+          unit_price: Number(i.unit_price),
+          amount: Number(i.quantity) * Number(i.unit_price),
+        }))
+      );
+      setShowModal(false);
+      resetForm();
+      loadInvoices();
+    }
+    setSaving(false);
+  }
+
+  async function updateStatus(id: string, status: InvoiceStatus) {
+    await supabase.from('invoices').update({ status }).eq('id', id);
+    setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, status } : inv));
+    if (viewInvoice?.id === id) setViewInvoice(prev => prev ? { ...prev, status } : null);
+  }
+
+  async function confirmDelete(id: string) {
+    await supabase.from('invoice_items').delete().eq('invoice_id', id);
+    await supabase.from('invoices').delete().eq('id', id);
+    setInvoices(prev => prev.filter(inv => inv.id !== id));
+    setConfirmDeleteId(null);
+    if (viewInvoice?.id === id) setViewInvoice(null);
+  }
+
+  function resetForm() {
+    setForm({ client_name: '', client_email: '', client_address: '', due_date: '', tax_rate: '0', notes: '' });
+    setItems([{ description: '', quantity: '1', unit_price: '' }]);
+  }
+
+  function addItem() {
+    setItems(p => [...p, { description: '', quantity: '1', unit_price: '' }]);
+  }
+
+  function removeItem(i: number) {
+    setItems(p => p.filter((_, idx) => idx !== i));
+  }
+
+  const { subtotal, taxAmount, total } = calcTotals();
+
+  const filtered = statusFilter === 'all' ? invoices : invoices.filter(i => i.status === statusFilter);
+  const paidTotal = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
+  const pendingTotal = invoices.filter(i => i.status === 'sent' || i.status === 'draft').reduce((s, i) => s + i.total, 0);
+  const overdueTotal = invoices.filter(i => i.status === 'overdue').reduce((s, i) => s + i.total, 0);
+
+  const businessName = profile?.business_name || profile?.full_name || '';
+
+  return (
+    <div style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
+      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <h1 style={{ fontSize: 22, marginBottom: 4 }}>Invoices</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Create and manage client invoices</p>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button variant="secondary" icon={<Download size={14} />} onClick={() => {
+            const rows = invoices.map(inv => [inv.invoice_number, inv.client_name, inv.client_email, formatDate(inv.issue_date), formatDate(inv.due_date), inv.status, inv.subtotal, inv.tax_amount, inv.total]);
+            downloadCSV(`invoices-${new Date().toISOString().split('T')[0]}.csv`, ['Invoice #', 'Client', 'Email', 'Issue Date', 'Due Date', 'Status', 'Subtotal', 'Tax', 'Total (NGN)'], rows);
+          }}>Export CSV</Button>
+          <Button variant="primary" icon={<Plus size={14} />} onClick={() => { resetForm(); setShowModal(true); }}>
+            New Invoice
+          </Button>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+        {[
+          { label: 'Paid', value: paidTotal, color: 'var(--success)', bg: 'var(--success-dim)', border: 'rgba(34,197,94,0.2)' },
+          { label: 'Pending', value: pendingTotal, color: 'var(--warning)', bg: 'var(--warning-dim)', border: 'rgba(245,158,11,0.2)' },
+          { label: 'Overdue', value: overdueTotal, color: 'var(--error)', bg: 'var(--error-dim)', border: 'rgba(239,68,68,0.2)' },
+        ].map(s => (
+          <Card key={s.label} style={{ border: `1px solid ${s.border}`, background: s.bg }}>
+            <div style={{ fontSize: 11, color: s.color, marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)' }}>
+              {formatCurrency(s.value)}
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <Card style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--bg-border)', display: 'flex', gap: 6 }}>
+          {(['all', 'draft', 'sent', 'paid', 'overdue'] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              style={{
+                padding: '5px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 500,
+                background: statusFilter === s ? 'var(--accent-primary)' : 'var(--bg-elevated)',
+                color: statusFilter === s ? 'white' : 'var(--text-secondary)',
+                border: `1px solid ${statusFilter === s ? 'var(--accent-primary)' : 'var(--bg-border)'}`,
+                transition: 'all 0.15s', textTransform: 'capitalize',
+              }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div style={{ padding: 20 }}>
+            {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 64, marginBottom: 8 }} />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '48px 20px' }}>
+            <Receipt size={32} color="var(--text-disabled)" style={{ margin: '0 auto 12px' }} />
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No invoices found</p>
+          </div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: 'var(--bg-elevated)' }}>
+                {['Invoice #', 'Client', 'Issue Date', 'Due Date', 'Amount', 'Status', ''].map(h => (
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((inv, i) => (
+                <tr
+                  key={inv.id}
+                  onClick={() => loadInvoiceWithItems(inv.id)}
+                  style={{
+                    borderTop: i > 0 ? '1px solid var(--bg-border)' : 'none',
+                    transition: 'background 0.1s',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                >
+                  <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 600, color: 'var(--accent-light)' }}>{inv.invoice_number}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{inv.client_name}</div>
+                    {inv.client_email && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{inv.client_email}</div>}
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-secondary)' }}>{formatDate(inv.issue_date)}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 12, color: new Date(inv.due_date) < new Date() && inv.status !== 'paid' ? 'var(--error)' : 'var(--text-secondary)' }}>
+                    {formatDate(inv.due_date)}
+                  </td>
+                  <td style={{ padding: '12px 16px', fontWeight: 700, fontSize: 13, color: 'var(--text-primary)', fontFamily: 'Space Grotesk, sans-serif' }}>
+                    {formatCurrency(inv.total)}
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <Badge variant={statusVariant[inv.status]}>{inv.status}</Badge>
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => loadInvoiceWithItems(inv.id)}
+                        title="View invoice"
+                        style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                      ><Eye size={13} /></button>
+                      {inv.status !== 'paid' && inv.status !== 'cancelled' && (
+                        <button
+                          onClick={() => updateStatus(inv.id, inv.status === 'draft' ? 'sent' : 'paid')}
+                          title={inv.status === 'draft' ? 'Mark as Sent' : 'Mark as Paid'}
+                          style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--success)', transition: 'all 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--success-dim)'}
+                          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                        >
+                          {inv.status === 'draft' ? <Send size={13} /> : <Check size={13} />}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setConfirmDeleteId(inv.id)}
+                        title="Delete invoice"
+                        style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--error)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                      ><Trash2 size={13} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
+
+      <Modal open={showModal} onClose={() => setShowModal(false)} title="Create Invoice" size="lg">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Input label="Client Name" placeholder="Acme Corp" value={form.client_name} onChange={e => setForm(p => ({ ...p, client_name: e.target.value }))} required />
+            <Input label="Client Email" type="email" placeholder="client@example.com" value={form.client_email} onChange={e => setForm(p => ({ ...p, client_email: e.target.value }))} />
+          </div>
+          <Input label="Client Address" placeholder="123 Main St, Lagos" value={form.client_address} onChange={e => setForm(p => ({ ...p, client_address: e.target.value }))} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Input label="Due Date" type="date" value={form.due_date} onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))} required />
+            <Input label="Tax Rate (%)" type="number" min="0" max="100" step="0.1" value={form.tax_rate} onChange={e => setForm(p => ({ ...p, tax_rate: e.target.value }))} />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 8 }}>Line Items</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {items.map((item, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '3fr 1fr 1.5fr auto', gap: 8, alignItems: 'end' }}>
+                  <Input placeholder="Description" value={item.description} onChange={e => setItems(p => p.map((x, j) => j === i ? { ...x, description: e.target.value } : x))} />
+                  <Input placeholder="Qty" type="number" min="0" step="0.01" value={item.quantity} onChange={e => setItems(p => p.map((x, j) => j === i ? { ...x, quantity: e.target.value } : x))} />
+                  <Input placeholder="Unit Price (₦)" type="number" min="0" step="0.01" value={item.unit_price} onChange={e => setItems(p => p.map((x, j) => j === i ? { ...x, unit_price: e.target.value } : x))} />
+                  <button type="button" onClick={() => removeItem(i)}
+                    style={{ padding: '9px 8px', background: 'var(--error-dim)', borderRadius: 'var(--radius-md)', color: 'var(--error)', display: 'flex', alignItems: 'center' }}>
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={addItem}
+                style={{ padding: '7px 12px', background: 'var(--bg-elevated)', border: '1px dashed var(--bg-border)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                <Plus size={12} /> Add Item
+              </button>
+            </div>
+          </div>
+
+          <div style={{ padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)' }}>
+              <span>Subtotal</span><span>{formatCurrency(subtotal)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)' }}>
+              <span>Tax ({form.tax_rate || 0}%)</span><span>{formatCurrency(taxAmount)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', borderTop: '1px solid var(--bg-border)', paddingTop: 6, marginTop: 2 }}>
+              <span>Total</span><span style={{ fontFamily: 'Space Grotesk, sans-serif', color: 'var(--accent-light)' }}>{formatCurrency(total)}</span>
+            </div>
+          </div>
+
+          <Input label="Notes" placeholder="Payment terms, bank details, etc." value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
+
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
+            <Button variant="primary" loading={saving} type="submit">Create Invoice</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {viewInvoice && (
+        <Modal open={!!viewInvoice} onClose={() => setViewInvoice(null)} title={`Invoice ${viewInvoice.invoice_number}`} size="md">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{viewInvoice.client_name}</div>
+                {viewInvoice.client_email && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{viewInvoice.client_email}</div>}
+                {viewInvoice.client_address && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>{viewInvoice.client_address}</div>}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <Badge variant={statusVariant[viewInvoice.status]}>{viewInvoice.status}</Badge>
+                <button
+                  onClick={() => downloadInvoicePDF(viewInvoice, businessName)}
+                  title="Download PDF"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px',
+                    background: 'var(--accent-dim)', color: 'var(--accent-light)',
+                    border: '1px solid var(--accent-border)', borderRadius: 'var(--radius-md)',
+                    fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--accent-primary)'; (e.currentTarget as HTMLElement).style.color = 'white'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--accent-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--accent-light)'; }}
+                >
+                  <Download size={13} /> PDF
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
+              <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>Issue Date</div><div style={{ fontSize: 13, fontWeight: 500 }}>{formatDate(viewInvoice.issue_date)}</div></div>
+              <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>Due Date</div><div style={{ fontSize: 13, fontWeight: 500 }}>{formatDate(viewInvoice.due_date)}</div></div>
+            </div>
+
+            {viewInvoice.items && viewInvoice.items.length > 0 && (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: 'var(--bg-elevated)' }}>
+                    {['Description', 'Qty', 'Price', 'Amount'].map(h => (
+                      <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {viewInvoice.items.map(item => (
+                    <tr key={item.id} style={{ borderTop: '1px solid var(--bg-border)' }}>
+                      <td style={{ padding: '8px 12px', fontSize: 13 }}>{item.description}</td>
+                      <td style={{ padding: '8px 12px', fontSize: 13 }}>{item.quantity}</td>
+                      <td style={{ padding: '8px 12px', fontSize: 13 }}>{formatCurrency(item.unit_price)}</td>
+                      <td style={{ padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{formatCurrency(item.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            <div style={{ padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>
+                <span>Subtotal</span><span>{formatCurrency(viewInvoice.subtotal)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>
+                <span>Tax ({viewInvoice.tax_rate}%)</span><span>{formatCurrency(viewInvoice.tax_amount)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 700, borderTop: '1px solid var(--bg-border)', paddingTop: 8 }}>
+                <span>Total</span>
+                <span style={{ color: 'var(--accent-light)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(viewInvoice.total)}</span>
+              </div>
+            </div>
+
+            {viewInvoice.notes && (
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
+                {viewInvoice.notes}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+              <button
+                onClick={() => { setViewInvoice(null); setConfirmDeleteId(viewInvoice.id); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px',
+                  background: 'var(--error-dim)', color: 'var(--error)',
+                  border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius-md)',
+                  fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                }}
+              >
+                <Trash2 size={13} /> Delete Invoice
+              </button>
+
+              {viewInvoice.status !== 'paid' && viewInvoice.status !== 'cancelled' && (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {viewInvoice.status === 'draft' && (
+                    <Button variant="secondary" icon={<Send size={13} />} onClick={() => updateStatus(viewInvoice.id, 'sent')}>Mark as Sent</Button>
+                  )}
+                  <Button variant="success" icon={<Check size={13} />} onClick={() => updateStatus(viewInvoice.id, 'paid')}>Mark as Paid</Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      <Modal open={!!confirmDeleteId} onClose={() => setConfirmDeleteId(null)} title="Delete Invoice" size="sm">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            Are you sure you want to delete this invoice? This action cannot be undone.
+          </p>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <Button variant="secondary" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
+            <Button variant="danger" icon={<Trash2 size={13} />} onClick={() => confirmDeleteId && confirmDelete(confirmDeleteId)}>
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+}
