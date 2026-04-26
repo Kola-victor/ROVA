@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [staffData, setStaffData] = useState<TeamMember | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const isAdmin = !!profile && !staffData;
+  const isAdmin = !!user && !staffData;
   const isStaff = !!staffData;
 
   useEffect(() => {

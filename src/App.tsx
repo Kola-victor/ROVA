@@ -22,6 +22,7 @@ import InventoryPage from './pages/inventory/InventoryPage';
 import TeamPage from './pages/team/TeamPage';
 import OnboardingPage from './pages/team/OnboardingPage';
 import NotificationsPage from './pages/notifications/NotificationsPage';
+import AcceptInvitePage from './pages/auth/AcceptInvitePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -72,6 +73,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
+          <Route path="/accept-invite" element={<AcceptInvitePage />} />
           <Route
             path="/"
             element={

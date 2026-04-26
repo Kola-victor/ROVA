@@ -37,7 +37,7 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           fullName: form.fullName,
           email: form.email,
-          redirectTo: `${window.location.origin}/login`
+          redirectTo: `${window.location.origin}/accept-invite`
         })
       });
 

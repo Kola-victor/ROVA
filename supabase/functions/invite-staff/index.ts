@@ -45,11 +45,13 @@ serve(async (req) => {
       throw new Error('Staff members cannot invite new staff')
     }
 
-    const { email, fullName, redirectTo } = await req.json()
+    const { email, fullName, role, redirectTo } = await req.json()
 
     if (!email || !fullName) {
       throw new Error('Email and full name are required')
     }
+
+    const memberRole = role === 'admin' ? 'admin' : 'staff'
 
     // Invite the user
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
@@ -68,7 +70,7 @@ serve(async (req) => {
       owner_id: requester.id,
       member_id: newUserId,
       invite_email: email,
-      role: 'staff',
+      role: memberRole,
       status: 'pending',
     })
 

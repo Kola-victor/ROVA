@@ -39,8 +39,9 @@ export default function TeamPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ invite_email: '', role: 'staff' as TeamMember['role'] });
+  const [form, setForm] = useState({ fullName: '', invite_email: '', role: 'staff' as TeamMember['role'] });
   const [saving, setSaving] = useState(false);
+  const [inviteError, setInviteError] = useState('');
 
   useEffect(() => {
     if (user) loadData();
@@ -59,23 +60,37 @@ export default function TeamPage() {
 
   async function handleInvite(e: FormEvent) {
     e.preventDefault();
+    setInviteError('');
     setSaving(true);
-    await supabase.from('team_members').insert({
-      owner_id: user!.id,
-      invite_email: form.invite_email,
-      role: form.role,
-      status: 'pending',
-    });
-    await supabase.from('activity_logs').insert({
-      user_id: user!.id, owner_id: user!.id,
-      action: 'created', entity_type: 'team_member',
-      entity_label: form.invite_email,
-      metadata: { role: form.role },
-    });
-    setSaving(false);
-    setShowModal(false);
-    setForm({ invite_email: '', role: 'staff' });
-    loadData();
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-staff`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          fullName: form.fullName,
+          email: form.invite_email,
+          role: form.role,
+          redirectTo: `${window.location.origin}/accept-invite`,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to invite staff');
+
+      setShowModal(false);
+      setForm({ fullName: '', invite_email: '', role: 'staff' });
+      loadData();
+    } catch (err: any) {
+      setInviteError(err.message || 'Failed to send invite.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleRemove(id: string, email: string) {
@@ -233,8 +248,9 @@ export default function TeamPage() {
         </div>
       )}
 
-      <Modal open={showModal} onClose={() => setShowModal(false)} title="Invite Team Member" size="sm">
+      <Modal open={showModal} onClose={() => { setShowModal(false); setInviteError(''); }} title="Invite Team Member" size="sm">
         <form onSubmit={handleInvite} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <Input label="Full Name" placeholder="Jane Doe" value={form.fullName} onChange={e => setForm(p => ({ ...p, fullName: e.target.value }))} required />
           <Input label="Email Address" type="email" placeholder="colleague@company.com" value={form.invite_email} onChange={e => setForm(p => ({ ...p, invite_email: e.target.value }))} required />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>Role</label>
@@ -248,10 +264,15 @@ export default function TeamPage() {
             </div>
           </div>
           <div style={{ padding: '10px 12px', background: 'var(--info-dim)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 'var(--radius-md)', fontSize: 12, color: 'var(--text-secondary)' }}>
-            An invitation will be recorded. The team member can sign up with this email to gain access.
+            An invite email will be sent. They must click the link to set their password and activate their account.
           </div>
+          {inviteError && (
+            <div style={{ padding: '10px 12px', background: 'var(--error-dim)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius-md)', color: 'var(--error)', fontSize: 13 }}>
+              {inviteError}
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
+            <Button variant="secondary" type="button" onClick={() => { setShowModal(false); setInviteError(''); }}>Cancel</Button>
             <Button variant="primary" loading={saving} type="submit">Send Invite</Button>
           </div>
         </form>
