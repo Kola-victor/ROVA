@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
-import Input from '../ui/Input';
+
 
 export default function AppLayout() {
   const { user, isStaff, staffData, refreshAuth } = useAuth();

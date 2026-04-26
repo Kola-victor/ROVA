@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
 export default function OnboardingPage() {
-  const { user } = useAuth();
+  useAuth();
   const [form, setForm] = useState({ fullName: '', email: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

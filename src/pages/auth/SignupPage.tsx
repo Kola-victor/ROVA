@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Mail, Lock, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -9,7 +9,6 @@ import Input from '../../components/ui/Input';
 export default function SignupPage() {
   const { signUp } = useAuth();
   const { theme } = useTheme();
-  const navigate = useNavigate();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,19 +19,20 @@ export default function SignupPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
+
     if (password.length < 6) {
       setError('Password must be at least 6 characters.');
       return;
     }
+
     setLoading(true);
-    const { error, needsEmailConfirmation } = await signUp(email, password, fullName);
+    const { error } = await signUp(email, password, fullName);
     setLoading(false);
+
     if (error) {
       setError(error.message || 'Failed to create account. Please try again.');
-    } else if (needsEmailConfirmation) {
-      setSuccessMsg('Account created successfully! Please check your email inbox to confirm your account.');
     } else {
-      navigate('/dashboard');
+      setSuccessMsg('Account created successfully! Please check your email to confirm your account.');
     }
   }
 
@@ -55,10 +55,16 @@ export default function SignupPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px',
           }}>
-            <img src={theme === 'light' ? "/rova-light.png" : "/rova.png"} alt="ROVA Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+            <img
+              src={theme === 'light' ? "/rova-light.png" : "/rova.png"}
+              alt="ROVA Logo"
+              style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+            />
           </div>
           <h1 style={{ fontSize: 24, marginBottom: 6 }}>Create your account</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Start managing your finances with ROVA</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+            Start managing your finances with ROVA
+          </p>
         </div>
 
         <div style={{
@@ -99,7 +105,8 @@ export default function SignupPage() {
             {error && (
               <div style={{
                 padding: '10px 12px', background: 'var(--error-dim)',
-                border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                borderRadius: 'var(--radius-md)',
                 color: 'var(--error)', fontSize: 13,
               }}>
                 {error}
@@ -109,22 +116,35 @@ export default function SignupPage() {
             {successMsg && (
               <div style={{
                 padding: '10px 12px', background: 'var(--success-dim)',
-                border: '1px solid rgba(34,197,94,0.2)', borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(34,197,94,0.2)',
+                borderRadius: 'var(--radius-md)',
                 color: 'var(--success)', fontSize: 13,
               }}>
                 {successMsg}
               </div>
             )}
 
-            <Button variant="primary" size="lg" loading={loading} style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}>
+            <Button
+              variant="primary"
+              size="lg"
+              loading={loading}
+              style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}
+            >
               Create Account
             </Button>
           </form>
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--text-muted)', fontSize: 13 }}>
+        <p style={{
+          textAlign: 'center',
+          marginTop: 20,
+          color: 'var(--text-muted)',
+          fontSize: 13
+        }}>
           Already have an account?{' '}
-          <Link to="/login" style={{ color: 'var(--accent-light)', fontWeight: 500 }}>Sign in</Link>
+          <Link to="/login" style={{ color: 'var(--accent-light)', fontWeight: 500 }}>
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

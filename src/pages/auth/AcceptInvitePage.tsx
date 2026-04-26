@@ -20,12 +20,13 @@ export default function AcceptInvitePage() {
   // Supabase auto-processes the #access_token in the URL hash.
   // Wait for the session to be established before showing the form.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) setSessionReady(true);
     });
 
     // Also check for an existing session immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
+
       if (session) setSessionReady(true);
     });
 
