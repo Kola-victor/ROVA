@@ -126,6 +126,10 @@ function downloadInvoicePDF(inv: Invoice, businessName: string) {
       <div class="totals-row"><span>Subtotal</span><span>${formatCurrency(inv.subtotal)}</span></div>
       <div class="totals-row"><span>Tax (${inv.tax_rate}%)</span><span>${formatCurrency(inv.tax_amount)}</span></div>
       <div class="totals-row grand"><span>Total</span><span>${formatCurrency(inv.total)}</span></div>
+      ${inv.amount_paid ? `
+      <div class="totals-row" style="color:#16a34a;margin-top:4px"><span>Amount Paid</span><span>${formatCurrency(inv.amount_paid)}</span></div>
+      <div class="totals-row" style="color:#ea580c;font-weight:600"><span>Balance Due</span><span>${formatCurrency(inv.total - inv.amount_paid)}</span></div>
+      ` : ''}
     </div>
 
     ${inv.notes ? `
