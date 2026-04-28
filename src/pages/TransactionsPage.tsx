@@ -14,7 +14,7 @@ import Input from '../components/ui/Input';
 type FilterType = 'all' | 'income' | 'expense';
 
 export default function TransactionsPage() {
-  const { user } = useAuth();
+  const { user, isStaff, profile } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -37,8 +37,15 @@ export default function TransactionsPage() {
 
   async function loadData() {
     setLoading(true);
+    let txQuery = supabase.from('transactions').select('*, category:categories(*), account:accounts(*)').eq('user_id', user!.id).order('date', { ascending: false });
+    
+    if (isStaff) {
+      const limit = profile?.staff_visibility_limit || 500000;
+      txQuery = txQuery.lt('amount', limit);
+    }
+
     const [txRes, accRes, catRes] = await Promise.all([
-      supabase.from('transactions').select('*, category:categories(*), account:accounts(*)').eq('user_id', user!.id).order('date', { ascending: false }),
+      txQuery,
       supabase.from('accounts').select('*').eq('user_id', user!.id).eq('is_active', true),
       supabase.from('categories').select('*').or(`user_id.eq.${user!.id},is_system.eq.true`),
     ]);

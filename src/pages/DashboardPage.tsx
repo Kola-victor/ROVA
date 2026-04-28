@@ -11,7 +11,7 @@ import Button from '../components/ui/Button';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function DashboardPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, isStaff } = useAuth();
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -24,10 +24,19 @@ export default function DashboardPage() {
 
   async function loadData() {
     setLoading(true);
+    let txQuery = supabase.from('transactions').select('*, category:categories(*), account:accounts(*)').eq('user_id', user!.id).order('date', { ascending: false }).limit(50);
+    let invQuery = supabase.from('invoices').select('total, amount_paid').eq('user_id', user!.id).in('status', ['sent', 'overdue']);
+
+    if (isStaff) {
+      const limit = profile?.staff_visibility_limit || 500000;
+      txQuery = txQuery.lt('amount', limit);
+      invQuery = invQuery.lt('total', limit);
+    }
+
     const [txRes, accRes, invRes] = await Promise.all([
-      supabase.from('transactions').select('*, category:categories(*), account:accounts(*)').eq('user_id', user!.id).order('date', { ascending: false }).limit(50),
+      txQuery,
       supabase.from('accounts').select('*').eq('user_id', user!.id).eq('is_active', true),
-      supabase.from('invoices').select('total, amount_paid').eq('user_id', user!.id).in('status', ['sent', 'overdue'])
+      invQuery
     ]);
     setTransactions(txRes.data || []);
     setAccounts(accRes.data || []);

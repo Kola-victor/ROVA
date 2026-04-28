@@ -150,7 +150,7 @@ function downloadInvoicePDF(inv: Invoice, businessName: string) {
 }
 
 export default function InvoicesPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, isStaff } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -176,8 +176,15 @@ export default function InvoicesPage() {
 
   async function loadInvoices() {
     setLoading(true);
+    let invQuery = supabase.from('invoices').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
+    
+    if (isStaff) {
+      const limit = profile?.staff_visibility_limit || 500000;
+      invQuery = invQuery.lt('total', limit);
+    }
+
     const [invRes, invItemsRes] = await Promise.all([
-      supabase.from('invoices').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
+      invQuery,
       supabase.from('inventory_items').select('*').eq('user_id', user!.id).eq('status', 'active')
     ]);
     setInvoices(invRes.data || []);

@@ -14,6 +14,7 @@ export type Profile = {
   currency: string;
   phone: string;
   avatar_url: string;
+  staff_visibility_limit: number;
   created_at: string;
   updated_at: string;
 };

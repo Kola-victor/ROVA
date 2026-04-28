@@ -25,7 +25,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
 
   const [profileForm, setProfileForm] = useState({
-    full_name: '', business_name: '', phone: '', mode: 'business', currency: 'NGN',
+    full_name: '', business_name: '', phone: '', mode: 'business', currency: 'NGN', staff_visibility_limit: '500000',
   });
 
   const [accountForm, setAccountForm] = useState({
@@ -41,6 +41,7 @@ export default function SettingsPage() {
         phone: profile.phone || '',
         mode: profile.mode || 'business',
         currency: profile.currency || 'NGN',
+        staff_visibility_limit: profile.staff_visibility_limit ? String(profile.staff_visibility_limit) : '500000',
       });
     }
   }, [profile]);
@@ -59,7 +60,10 @@ export default function SettingsPage() {
   async function handleProfileSave(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
-    await updateProfile(profileForm as any);
+    await updateProfile({
+      ...profileForm,
+      staff_visibility_limit: Number(profileForm.staff_visibility_limit) || 500000,
+    } as any);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -170,6 +174,26 @@ export default function SettingsPage() {
                     <option value="KES">KES — Kenyan Shilling (KSh)</option>
                   </select>
                 </div>
+                
+                <div style={{ padding: '16px', background: 'var(--warning-dim)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 'var(--radius-md)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <Shield size={16} color="var(--warning)" />
+                    <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Team Security Controls</h4>
+                  </div>
+                  <Input
+                    label="Staff Visibility Threshold (Amount)"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={profileForm.staff_visibility_limit}
+                    onChange={e => setProfileForm(p => ({ ...p, staff_visibility_limit: e.target.value }))}
+                    placeholder="500000"
+                  />
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
+                    Staff members will not be able to view individual transactions, invoices, or cash movements exceeding this amount. Their dashboard totals will also exclude these high-value items.
+                  </p>
+                </div>
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <Button variant="primary" loading={saving} type="submit">Save Changes</Button>
                   {saved && <span style={{ fontSize: 13, color: 'var(--success)' }}>Saved!</span>}
