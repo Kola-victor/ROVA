@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Plus, Receipt, Send, Check, Eye, Trash2, X, Download } from 'lucide-react';
-import { supabase, type Invoice } from '../lib/supabase';
+import { Plus, Receipt, Send, Check, Eye, Trash2, X, Download, AlertCircle } from 'lucide-react';
+import { supabase, type Invoice, type InventoryItem } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency, formatDate } from '../lib/format';
 import { downloadCSV } from '../lib/export';
@@ -154,17 +154,20 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
   const [saving, setSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [form, setForm] = useState({
     client_name: '', client_email: '', client_address: '',
-    due_date: '', tax_rate: '0', notes: '',
+    due_date: '', tax_rate: '0', notes: '', paid_immediately: false,
   });
-  const [items, setItems] = useState<{ description: string; quantity: string; unit_price: string }[]>([
-    { description: '', quantity: '1', unit_price: '' }
+  const [items, setItems] = useState<{ description: string; quantity: string; unit_price: string; inventory_item_id: string }>([
+    { description: '', quantity: '1', unit_price: '', inventory_item_id: '' }
   ]);
 
   useEffect(() => {
@@ -173,12 +176,12 @@ export default function InvoicesPage() {
 
   async function loadInvoices() {
     setLoading(true);
-    const { data } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('user_id', user!.id)
-      .order('created_at', { ascending: false });
-    setInvoices(data || []);
+    const [invRes, invItemsRes] = await Promise.all([
+      supabase.from('invoices').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
+      supabase.from('inventory_items').select('*').eq('user_id', user!.id).eq('status', 'active')
+    ]);
+    setInvoices(invRes.data || []);
+    setInventoryItems(invItemsRes.data || []);
     setLoading(false);
   }
 
@@ -199,6 +202,7 @@ export default function InvoicesPage() {
     setSaving(true);
     const { subtotal, taxAmount, total } = calcTotals();
     const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+    const isPaid = form.paid_immediately;
 
     const { data: inv, error } = await supabase.from('invoices').insert({
       user_id: user!.id,
@@ -207,26 +211,78 @@ export default function InvoicesPage() {
       client_email: form.client_email,
       client_address: form.client_address,
       issue_date: new Date().toISOString().split('T')[0],
-      due_date: form.due_date,
+      due_date: isPaid ? new Date().toISOString().split('T')[0] : form.due_date,
       tax_rate: Number(form.tax_rate) || 0,
       tax_amount: taxAmount,
       subtotal,
       total,
+      amount_paid: isPaid ? total : 0,
       notes: form.notes,
-      status: 'draft',
+      status: isPaid ? 'paid' : 'sent',
     }).select().maybeSingle();
 
     if (!error && inv) {
       const validItems = items.filter(i => i.description && Number(i.unit_price) > 0);
+      
+      // 1. Insert invoice items
       await supabase.from('invoice_items').insert(
         validItems.map(i => ({
           invoice_id: inv.id,
           description: i.description,
+          inventory_item_id: i.inventory_item_id || null,
           quantity: Number(i.quantity),
           unit_price: Number(i.unit_price),
           amount: Number(i.quantity) * Number(i.unit_price),
         }))
       );
+
+      // 2. Reduce inventory & create inventory transactions for linked items
+      for (const item of validItems) {
+        if (item.inventory_item_id) {
+          const invItem = inventoryItems.find(x => x.id === item.inventory_item_id);
+          if (invItem) {
+            const qty = Number(item.quantity);
+            await supabase.from('inventory_items').update({
+              current_stock: invItem.current_stock - qty
+            }).eq('id', item.inventory_item_id);
+
+            await supabase.from('inventory_transactions').insert({
+              user_id: user!.id,
+              item_id: item.inventory_item_id,
+              type: 'sale',
+              quantity: qty,
+              unit_cost: invItem.cost_price,
+              total_cost: qty * invItem.cost_price,
+              reference: invoiceNumber,
+              notes: `Sold to ${form.client_name}`,
+              date: new Date().toISOString().split('T')[0],
+            });
+
+            // Record COGS
+            if (invItem.cost_price > 0) {
+              await supabase.from('transactions').insert({
+                user_id: user!.id, amount: qty * invItem.cost_price,
+                type: 'expense', description: `COGS — ${invItem.name}`,
+                date: new Date().toISOString().split('T')[0], notes: `Cost of goods sold for ${invoiceNumber}`,
+              });
+            }
+          }
+        }
+      }
+
+      // 3. Record income transaction if paid immediately
+      if (isPaid) {
+        await supabase.from('transactions').insert({
+          user_id: user!.id,
+          amount: total,
+          type: 'income',
+          description: `Payment for ${invoiceNumber}`,
+          reference: invoiceNumber,
+          date: new Date().toISOString().split('T')[0],
+          notes: `Immediate payment from ${form.client_name}`,
+        });
+      }
+
       setShowModal(false);
       resetForm();
       loadInvoices();
@@ -248,13 +304,46 @@ export default function InvoicesPage() {
     if (viewInvoice?.id === id) setViewInvoice(null);
   }
 
+  async function handleRecordPayment(e: FormEvent) {
+    e.preventDefault();
+    if (!viewInvoice) return;
+    setSaving(true);
+    
+    const amount = Number(paymentAmount);
+    if (amount <= 0) return;
+
+    const newAmountPaid = (viewInvoice.amount_paid || 0) + amount;
+    const newStatus = newAmountPaid >= viewInvoice.total ? 'paid' : viewInvoice.status;
+
+    await supabase.from('invoices').update({ 
+      amount_paid: newAmountPaid,
+      status: newStatus 
+    }).eq('id', viewInvoice.id);
+
+    await supabase.from('transactions').insert({
+      user_id: user!.id,
+      amount: amount,
+      type: 'income',
+      description: `Payment for ${viewInvoice.invoice_number}`,
+      reference: viewInvoice.invoice_number,
+      date: new Date().toISOString().split('T')[0],
+      notes: `Partial/Full payment received`,
+    });
+
+    setInvoices(prev => prev.map(inv => inv.id === viewInvoice.id ? { ...inv, amount_paid: newAmountPaid, status: newStatus } : inv));
+    setViewInvoice(prev => prev ? { ...prev, amount_paid: newAmountPaid, status: newStatus } : null);
+    setShowPaymentModal(false);
+    setPaymentAmount('');
+    setSaving(false);
+  }
+
   function resetForm() {
-    setForm({ client_name: '', client_email: '', client_address: '', due_date: '', tax_rate: '0', notes: '' });
-    setItems([{ description: '', quantity: '1', unit_price: '' }]);
+    setForm({ client_name: '', client_email: '', client_address: '', due_date: '', tax_rate: '0', notes: '', paid_immediately: false });
+    setItems([{ description: '', quantity: '1', unit_price: '', inventory_item_id: '' }]);
   }
 
   function addItem() {
-    setItems(p => [...p, { description: '', quantity: '1', unit_price: '' }]);
+    setItems(p => [...p, { description: '', quantity: '1', unit_price: '', inventory_item_id: '' }]);
   }
 
   function removeItem(i: number) {
@@ -422,7 +511,26 @@ export default function InvoicesPage() {
             <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 8 }}>Line Items</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {items.map((item, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '3fr 1fr 1.5fr auto', gap: 8, alignItems: 'end' }}>
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1.5fr auto', gap: 8, alignItems: 'end' }}>
+                  <select
+                    value={item.inventory_item_id}
+                    onChange={e => {
+                      const selectedId = e.target.value;
+                      const invItem = inventoryItems.find(x => x.id === selectedId);
+                      setItems(p => p.map((x, j) => j === i ? { 
+                        ...x, 
+                        inventory_item_id: selectedId,
+                        description: invItem ? invItem.name : x.description,
+                        unit_price: invItem ? String(invItem.selling_price) : x.unit_price
+                      } : x));
+                    }}
+                    style={{ padding: '8px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', outline: 'none' }}
+                  >
+                    <option value="">Custom Item...</option>
+                    {inventoryItems.map(inv => (
+                      <option key={inv.id} value={inv.id}>{inv.name} ({inv.current_stock} in stock)</option>
+                    ))}
+                  </select>
                   <Input placeholder="Description" value={item.description} onChange={e => setItems(p => p.map((x, j) => j === i ? { ...x, description: e.target.value } : x))} />
                   <Input placeholder="Qty" type="number" min="0" step="0.01" value={item.quantity} onChange={e => setItems(p => p.map((x, j) => j === i ? { ...x, quantity: e.target.value } : x))} />
                   <Input placeholder="Unit Price (₦)" type="number" min="0" step="0.01" value={item.unit_price} onChange={e => setItems(p => p.map((x, j) => j === i ? { ...x, unit_price: e.target.value } : x))} />
@@ -449,6 +557,19 @@ export default function InvoicesPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', borderTop: '1px solid var(--bg-border)', paddingTop: 6, marginTop: 2 }}>
               <span>Total</span><span style={{ fontFamily: 'Space Grotesk, sans-serif', color: 'var(--accent-light)' }}>{formatCurrency(total)}</span>
             </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '12px 14px', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 'var(--radius-md)' }}>
+            <input 
+              type="checkbox" 
+              id="paid_immediately" 
+              checked={form.paid_immediately} 
+              onChange={e => setForm(p => ({ ...p, paid_immediately: e.target.checked }))}
+              style={{ width: 16, height: 16, cursor: 'pointer' }}
+            />
+            <label htmlFor="paid_immediately" style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Check size={14} /> Mark as Paid Immediately (Receipt)
+            </label>
           </div>
 
           <Input label="Notes" placeholder="Payment terms, bank details, etc." value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
@@ -522,9 +643,15 @@ export default function InvoicesPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>
                 <span>Tax ({viewInvoice.tax_rate}%)</span><span>{formatCurrency(viewInvoice.tax_amount)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 700, borderTop: '1px solid var(--bg-border)', paddingTop: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 700, borderTop: '1px solid var(--bg-border)', paddingTop: 8, marginBottom: 8 }}>
                 <span>Total</span>
                 <span style={{ color: 'var(--accent-light)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(viewInvoice.total)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--success)' }}>
+                <span>Amount Paid</span><span>{formatCurrency(viewInvoice.amount_paid || 0)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 600, color: 'var(--warning)', marginTop: 4 }}>
+                <span>Balance Due</span><span>{formatCurrency(viewInvoice.total - (viewInvoice.amount_paid || 0))}</span>
               </div>
             </div>
 
@@ -552,13 +679,29 @@ export default function InvoicesPage() {
                   {viewInvoice.status === 'draft' && (
                     <Button variant="secondary" icon={<Send size={13} />} onClick={() => updateStatus(viewInvoice.id, 'sent')}>Mark as Sent</Button>
                   )}
-                  <Button variant="success" icon={<Check size={13} />} onClick={() => updateStatus(viewInvoice.id, 'paid')}>Mark as Paid</Button>
+                  <Button variant="success" icon={<Check size={13} />} onClick={() => { setPaymentAmount(String(viewInvoice.total - (viewInvoice.amount_paid || 0))); setShowPaymentModal(true); }}>Record Payment</Button>
                 </div>
               )}
             </div>
           </div>
         </Modal>
       )}
+
+      <Modal open={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Record Payment" size="sm">
+        <form onSubmit={handleRecordPayment} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {viewInvoice && (
+            <div style={{ padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--bg-border)' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Balance Due</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--warning)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(viewInvoice.total - (viewInvoice.amount_paid || 0))}</div>
+            </div>
+          )}
+          <Input label="Payment Amount (₦)" type="number" min="0" step="0.01" max={viewInvoice ? String(viewInvoice.total - (viewInvoice.amount_paid || 0)) : undefined} value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} required />
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <Button variant="secondary" type="button" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
+            <Button variant="primary" loading={saving} type="submit">Save Payment</Button>
+          </div>
+        </form>
+      </Modal>
 
       <Modal open={!!confirmDeleteId} onClose={() => setConfirmDeleteId(null)} title="Delete Invoice" size="sm">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

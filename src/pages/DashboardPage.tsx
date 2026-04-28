@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [arBalance, setArBalance] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,16 +24,21 @@ export default function DashboardPage() {
 
   async function loadData() {
     setLoading(true);
-    const [txRes, accRes] = await Promise.all([
+    const [txRes, accRes, invRes] = await Promise.all([
       supabase.from('transactions').select('*, category:categories(*), account:accounts(*)').eq('user_id', user!.id).order('date', { ascending: false }).limit(50),
       supabase.from('accounts').select('*').eq('user_id', user!.id).eq('is_active', true),
+      supabase.from('invoices').select('total, amount_paid').eq('user_id', user!.id).in('status', ['sent', 'overdue'])
     ]);
     setTransactions(txRes.data || []);
     setAccounts(accRes.data || []);
+    
+    const arTotal = (invRes.data || []).reduce((s, inv) => s + (inv.total - (inv.amount_paid || 0)), 0);
+    setArBalance(arTotal);
+    
     setLoading(false);
   }
 
-  const totalBalance = accounts.reduce((s, a) => s + a.balance, 0);
+  const totalBalance = accounts.reduce((s, a) => s + a.balance, 0) + arBalance;
   const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expenses = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const netFlow = income - expenses;
@@ -281,6 +287,29 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   ))}
+                  
+                  {arBalance > 0 && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 12px', background: 'var(--warning-dim)',
+                      borderRadius: 'var(--radius-md)', border: '1px dashed rgba(245,158,11,0.4)',
+                    }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 'var(--radius-md)',
+                        background: 'var(--warning)',
+                        opacity: 0.85, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <DollarSign size={14} color="white" />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--warning)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Accounts Receivable</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Unpaid Invoices</div>
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--warning)', fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {formatCurrency(arBalance)}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <EmptyState message="No accounts yet" sub="Add accounts in Settings" />

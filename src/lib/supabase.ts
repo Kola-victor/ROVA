@@ -76,6 +76,7 @@ export type Invoice = {
   tax_rate: number;
   tax_amount: number;
   total: number;
+  amount_paid: number;
   notes: string;
   currency: string;
   created_at: string;
@@ -86,6 +87,7 @@ export type InvoiceItem = {
   id: string;
   invoice_id: string;
   description: string;
+  inventory_item_id: string | null;
   quantity: number;
   unit_price: number;
   amount: number;
