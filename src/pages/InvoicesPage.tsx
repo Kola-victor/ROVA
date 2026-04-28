@@ -164,7 +164,7 @@ export default function InvoicesPage() {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [form, setForm] = useState({
     client_name: '', client_email: '', client_address: '',
-    due_date: '', tax_rate: '0', notes: '', paid_immediately: false,
+    due_date: '', tax_rate: '0', notes: '', payment_status: 'unpaid' as 'unpaid' | 'paid_in_full' | 'part_payment', amount_paid: '',
   });
   const [items, setItems] = useState<{ description: string; quantity: string; unit_price: string; inventory_item_id: string }>([
     { description: '', quantity: '1', unit_price: '', inventory_item_id: '' }
@@ -209,7 +209,17 @@ export default function InvoicesPage() {
     setSaving(true);
     const { subtotal, taxAmount, total } = calcTotals();
     const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
-    const isPaid = form.paid_immediately;
+    
+    let initialAmountPaid = 0;
+    let status: InvoiceStatus = 'sent';
+
+    if (form.payment_status === 'paid_in_full') {
+      initialAmountPaid = total;
+      status = 'paid';
+    } else if (form.payment_status === 'part_payment') {
+      initialAmountPaid = Number(form.amount_paid) || 0;
+      if (initialAmountPaid >= total) status = 'paid';
+    }
 
     const { data: inv, error } = await supabase.from('invoices').insert({
       user_id: user!.id,
@@ -218,14 +228,14 @@ export default function InvoicesPage() {
       client_email: form.client_email,
       client_address: form.client_address,
       issue_date: new Date().toISOString().split('T')[0],
-      due_date: isPaid ? new Date().toISOString().split('T')[0] : form.due_date,
+      due_date: form.payment_status === 'paid_in_full' ? new Date().toISOString().split('T')[0] : form.due_date,
       tax_rate: Number(form.tax_rate) || 0,
       tax_amount: taxAmount,
       subtotal,
       total,
-      amount_paid: isPaid ? total : 0,
+      amount_paid: initialAmountPaid,
       notes: form.notes,
-      status: isPaid ? 'paid' : 'sent',
+      status,
     }).select().maybeSingle();
 
     if (!error && inv) {
@@ -277,16 +287,16 @@ export default function InvoicesPage() {
         }
       }
 
-      // 3. Record income transaction if paid immediately
-      if (isPaid) {
+      // 3. Record income transaction if paid immediately or part payment
+      if (initialAmountPaid > 0) {
         await supabase.from('transactions').insert({
           user_id: user!.id,
-          amount: total,
+          amount: initialAmountPaid,
           type: 'income',
           description: `Payment for ${invoiceNumber}`,
           reference: invoiceNumber,
           date: new Date().toISOString().split('T')[0],
-          notes: `Immediate payment from ${form.client_name}`,
+          notes: form.payment_status === 'paid_in_full' ? `Full immediate payment from ${form.client_name}` : `Initial part payment from ${form.client_name}`,
         });
       }
 
@@ -345,7 +355,7 @@ export default function InvoicesPage() {
   }
 
   function resetForm() {
-    setForm({ client_name: '', client_email: '', client_address: '', due_date: '', tax_rate: '0', notes: '', paid_immediately: false });
+    setForm({ client_name: '', client_email: '', client_address: '', due_date: '', tax_rate: '0', notes: '', payment_status: 'unpaid', amount_paid: '' });
     setItems([{ description: '', quantity: '1', unit_price: '', inventory_item_id: '' }]);
   }
 
@@ -566,17 +576,42 @@ export default function InvoicesPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '12px 14px', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 'var(--radius-md)' }}>
-            <input 
-              type="checkbox" 
-              id="paid_immediately" 
-              checked={form.paid_immediately} 
-              onChange={e => setForm(p => ({ ...p, paid_immediately: e.target.checked }))}
-              style={{ width: 16, height: 16, cursor: 'pointer' }}
-            />
-            <label htmlFor="paid_immediately" style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Check size={14} /> Mark as Paid Immediately (Receipt)
-            </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px', background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Payment Terms</div>
+            <div style={{ display: 'grid', gridTemplateColumns: form.payment_status === 'part_payment' ? '1fr 1fr' : '1fr', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Payment Status</label>
+                <select
+                  value={form.payment_status}
+                  onChange={e => setForm(p => ({ ...p, payment_status: e.target.value as any }))}
+                  style={{ padding: '8px 12px', background: 'var(--bg-base)', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', outline: 'none' }}
+                >
+                  <option value="unpaid">Credit Sale (Invoice - Unpaid)</option>
+                  <option value="paid_in_full">Paid in Full Immediately (Receipt)</option>
+                  <option value="part_payment">Part Payment Received</option>
+                </select>
+              </div>
+              
+              {form.payment_status === 'part_payment' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Amount Paid Now (₦)</label>
+                  <input
+                    type="number" min="0" step="0.01" max={total}
+                    value={form.amount_paid}
+                    onChange={e => setForm(p => ({ ...p, amount_paid: e.target.value }))}
+                    placeholder="e.g. 5000"
+                    required
+                    style={{ padding: '8px 12px', background: 'var(--bg-base)', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+              )}
+            </div>
+            
+            {form.payment_status === 'part_payment' && (
+              <div style={{ fontSize: 12, color: 'var(--warning)', background: 'var(--warning-dim)', padding: '8px 12px', borderRadius: 'var(--radius-md)' }}>
+                Balance Due: <strong>{formatCurrency(total - (Number(form.amount_paid) || 0))}</strong>
+              </div>
+            )}
           </div>
 
           <Input label="Notes" placeholder="Payment terms, bank details, etc." value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
