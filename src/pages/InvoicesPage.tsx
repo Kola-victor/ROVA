@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Plus, Receipt, Send, Check, Eye, Trash2, X, Download, AlertCircle } from 'lucide-react';
+import { Plus, Receipt, Send, Check, Eye, Trash2, X, Download } from 'lucide-react';
 import { supabase, type Invoice, type InventoryItem } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency, formatDate } from '../lib/format';
@@ -166,7 +166,7 @@ export default function InvoicesPage() {
     client_name: '', client_email: '', client_address: '',
     due_date: '', tax_rate: '0', notes: '', payment_status: 'unpaid' as 'unpaid' | 'paid_in_full' | 'part_payment', amount_paid: '',
   });
-  const [items, setItems] = useState<{ description: string; quantity: string; unit_price: string; inventory_item_id: string }>([
+  const [items, setItems] = useState<{ description: string; quantity: string; unit_price: string; inventory_item_id: string }[]>([
     { description: '', quantity: '1', unit_price: '', inventory_item_id: '' }
   ]);
 
@@ -177,7 +177,7 @@ export default function InvoicesPage() {
   async function loadInvoices() {
     setLoading(true);
     let invQuery = supabase.from('invoices').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
-    
+
     if (isStaff) {
       const limit = profile?.staff_visibility_limit || 500000;
       invQuery = invQuery.lt('total', limit);
@@ -240,7 +240,7 @@ export default function InvoicesPage() {
 
     if (!error && inv) {
       const validItems = items.filter(i => i.description && Number(i.unit_price) > 0);
-      
+
       // 1. Insert invoice items
       await supabase.from('invoice_items').insert(
         validItems.map(i => ({
@@ -325,16 +325,16 @@ export default function InvoicesPage() {
     e.preventDefault();
     if (!viewInvoice) return;
     setSaving(true);
-    
+
     const amount = Number(paymentAmount);
     if (amount <= 0) return;
 
     const newAmountPaid = (viewInvoice.amount_paid || 0) + amount;
     const newStatus = newAmountPaid >= viewInvoice.total ? 'paid' : viewInvoice.status;
 
-    await supabase.from('invoices').update({ 
+    await supabase.from('invoices').update({
       amount_paid: newAmountPaid,
-      status: newStatus 
+      status: newStatus
     }).eq('id', viewInvoice.id);
 
     await supabase.from('transactions').insert({
@@ -430,7 +430,7 @@ export default function InvoicesPage() {
 
         {loading ? (
           <div style={{ padding: 20 }}>
-            {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 64, marginBottom: 8 }} />)}
+            {[1, 2, 3].map(i => <div key={i} className="skeleton" style={{ height: 64, marginBottom: 8 }} />)}
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 20px' }}>
@@ -534,8 +534,8 @@ export default function InvoicesPage() {
                     onChange={e => {
                       const selectedId = e.target.value;
                       const invItem = inventoryItems.find(x => x.id === selectedId);
-                      setItems(p => p.map((x, j) => j === i ? { 
-                        ...x, 
+                      setItems(p => p.map((x, j) => j === i ? {
+                        ...x,
                         inventory_item_id: selectedId,
                         description: invItem ? invItem.name : x.description,
                         unit_price: invItem ? String(invItem.selling_price) : x.unit_price
