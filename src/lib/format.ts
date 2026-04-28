@@ -10,6 +10,11 @@ export function formatDate(dateStr: string): string {
   return date.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+export function formatTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString('en-NG', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
 export function formatShortDate(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });

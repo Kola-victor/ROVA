@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, DollarSign, CreditCard, ArrowUpRight, ArrowDo
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { supabase, type Transaction, type Account } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { formatCurrency, formatDate } from '../lib/format';
+import { formatCurrency, formatDate, formatTime } from '../lib/format';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -340,7 +340,10 @@ function TransactionRow({ tx }: { tx: Transaction }) {
         <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {tx.description || (tx.category as any)?.name || 'Transaction'}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{formatDate(tx.date)}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{formatDate(tx.date)}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-disabled)' }}>{formatTime(tx.created_at)}</div>
+        </div>
       </div>
       <div style={{ fontSize: 13, fontWeight: 600, color: isIncome ? 'var(--success)' : 'var(--error)', flexShrink: 0, fontFamily: 'Space Grotesk, sans-serif' }}>
         {isIncome ? '+' : '-'}{formatCurrency(tx.amount)}

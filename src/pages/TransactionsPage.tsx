@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, Search, ArrowUpRight, ArrowDownRight, Trash2, Check, Sparkles, Download } from 'lucide-react';
 import { supabase, type Transaction, type Account, type Category } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { formatCurrency, formatDate } from '../lib/format';
+import { formatCurrency, formatDate, formatTime } from '../lib/format';
 import { autoClassify } from '../lib/categorise';
 import { downloadCSV } from '../lib/export';
 import Card from '../components/ui/Card';
@@ -86,13 +86,13 @@ export default function TransactionsPage() {
 
   function handleExportCSV() {
     const rows = filtered.map(tx => [
-      formatDate(tx.date), tx.description || '', tx.type,
+      formatDate(tx.date), formatTime(tx.created_at), tx.description || '', tx.type,
       (tx.category as any)?.name || '', (tx.account as any)?.name || '',
       tx.type === 'income' ? tx.amount : -tx.amount,
       tx.is_verified ? 'Verified' : 'Pending', tx.notes || '',
     ]);
     downloadCSV(`transactions-${new Date().toISOString().split('T')[0]}.csv`,
-      ['Date', 'Description', 'Type', 'Category', 'Account', 'Amount (NGN)', 'Status', 'Notes'], rows);
+      ['Date', 'Time', 'Description', 'Type', 'Category', 'Account', 'Amount (NGN)', 'Status', 'Notes'], rows);
   }
 
   function resetForm() {
@@ -229,7 +229,10 @@ export default function TransactionsPage() {
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                 >
-                  <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{formatDate(tx.date)}</td>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{formatDate(tx.date)}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{formatTime(tx.created_at)}</div>
+                  </td>
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{
