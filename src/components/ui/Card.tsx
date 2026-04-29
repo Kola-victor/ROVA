@@ -21,6 +21,8 @@ export default function Card({ children, style, onClick, hoverable, glow }: Card
         transition: 'all 0.2s ease',
         cursor: onClick ? 'pointer' : undefined,
         boxShadow: glow ? 'var(--shadow-glow)' : 'none',
+        minWidth: 0,
+        overflow: 'hidden',
         ...(hoverable ? { ':hover': { borderColor: 'var(--accent-border)' } } : {}),
         ...style,
       }}
