@@ -446,9 +446,13 @@ export default function InvoicesPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-elevated)' }}>
-                {['Invoice #', 'Client', 'Issue Date', 'Due Date', 'Amount', 'Status', ''].map(h => (
-                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    {h}
+                {[
+                  { label: 'Invoice #' }, { label: 'Client' }, 
+                  { label: 'Issue Date', hideMobile: true }, { label: 'Due Date', hideMobile: true }, 
+                  { label: 'Amount' }, { label: 'Status' }, { label: '' }
+                ].map(h => (
+                  <th key={h.label} className={h.hideMobile ? "mobile-hide" : ""} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {h.label}
                   </th>
                 ))}
               </tr>
@@ -471,8 +475,8 @@ export default function InvoicesPage() {
                     <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{inv.client_name}</div>
                     {inv.client_email && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{inv.client_email}</div>}
                   </td>
-                  <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-secondary)' }}>{formatDate(inv.issue_date)}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 12, color: new Date(inv.due_date) < new Date() && inv.status !== 'paid' ? 'var(--error)' : 'var(--text-secondary)' }}>
+                  <td className="mobile-hide" style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-secondary)' }}>{formatDate(inv.issue_date)}</td>
+                  <td className="mobile-hide" style={{ padding: '12px 16px', fontSize: 12, color: new Date(inv.due_date) < new Date() && inv.status !== 'paid' ? 'var(--error)' : 'var(--text-secondary)' }}>
                     {formatDate(inv.due_date)}
                   </td>
                   <td style={{ padding: '12px 16px', fontWeight: 700, fontSize: 13, color: 'var(--text-primary)', fontFamily: 'Space Grotesk, sans-serif' }}>
