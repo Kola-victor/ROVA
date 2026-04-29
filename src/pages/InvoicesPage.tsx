@@ -381,8 +381,8 @@ export default function InvoicesPage() {
   const businessName = profile?.business_name || profile?.full_name || '';
 
   return (
-    <div style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col mobile-gap-4" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>Invoices</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Create and manage client invoices</p>
@@ -398,7 +398,7 @@ export default function InvoicesPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
           { label: 'Paid', value: paidTotal, color: 'var(--success)', bg: 'var(--success-dim)', border: 'rgba(34,197,94,0.2)' },
           { label: 'Pending', value: pendingTotal, color: 'var(--warning)', bg: 'var(--warning-dim)', border: 'rgba(245,158,11,0.2)' },
@@ -442,7 +442,8 @@ export default function InvoicesPage() {
             <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No invoices found</p>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="mobile-overflow-x">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-elevated)' }}>
                 {['Invoice #', 'Client', 'Issue Date', 'Due Date', 'Amount', 'Status', ''].map(h => (
@@ -512,7 +513,8 @@ export default function InvoicesPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         )}
       </Card>
 

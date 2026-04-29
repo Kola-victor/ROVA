@@ -4,8 +4,9 @@ import {
   LayoutDashboard, ArrowLeftRight, ChartBar as BarChart2, FileText, Receipt,
   Settings, LogOut, Plus, BookOpen, Layers, BookMarked,
   Scale, TrendingUp, LayoutList, Banknote, ChevronDown, ChevronRight,
-  Sparkles, Users, Package, Shield
+  Sparkles, Users, Package, Shield, X
 } from 'lucide-react';
+import { useMobile } from '../../hooks/useMobile';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getInitials } from '../../lib/format';
@@ -75,9 +76,15 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-export default function Sidebar() {
+type SidebarProps = {
+  isOpen?: boolean;
+  onClose?: () => void;
+};
+
+export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const { user, profile, isStaff, signOut } = useAuth();
   const { theme } = useTheme();
+  const isMobile = useMobile();
   const navigate = useNavigate();
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -114,26 +121,48 @@ export default function Sidebar() {
   }).filter(Boolean) as NavGroup[];
 
   return (
-    <aside style={{
-      width: 220,
-      minWidth: 220,
-      height: '100vh',
-      background: 'var(--bg-surface)',
-      borderRight: '1px solid var(--bg-border)',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'sticky',
-      top: 0,
-      overflowY: 'auto',
-    }}>
-      <div style={{ padding: '4px 0', borderBottom: '1px solid var(--bg-border)', flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
-        <div style={{
-          width: 90, height: 'auto',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <img src={theme === 'light' ? "/rova-light.png" : "/rova.png"} alt="ROVA Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+    <>
+      {/* Mobile Backdrop */}
+      {isMobile && isOpen && (
+        <div 
+          onClick={onClose}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.5)', zIndex: 40, backdropFilter: 'blur(2px)',
+          }}
+        />
+      )}
+
+      <aside style={{
+        width: 220,
+        minWidth: 220,
+        height: '100vh',
+        background: 'var(--bg-surface)',
+        borderRight: '1px solid var(--bg-border)',
+        display: 'flex',
+        flexDirection: 'column',
+        position: isMobile ? 'fixed' : 'sticky',
+        top: 0,
+        left: 0,
+        zIndex: 50,
+        transform: isMobile ? (isOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflowY: 'auto',
+      }}>
+        <div style={{ padding: '4px 0', borderBottom: '1px solid var(--bg-border)', flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+          <div style={{
+            width: 90, height: 'auto',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <img src={theme === 'light' ? "/rova-light.png" : "/rova.png"} alt="ROVA Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+          </div>
+          {isMobile && (
+            <button onClick={onClose} style={{ position: 'absolute', right: 10, color: 'var(--text-muted)' }}>
+              <X size={20} />
+            </button>
+          )}
         </div>
-      </div>
+
 
       <div style={{ padding: '12px 10px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid var(--bg-border)', margin: '0 6px', flexShrink: 0 }}>
         <div style={{
@@ -271,5 +300,6 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }

@@ -121,3 +121,43 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-sm);
 }
+
+/* --- Mobile Responsiveness Utilities --- */
+
+@media (max-width: 768px) {
+  .mobile-hide {
+    display: none !important;
+  }
+  
+  .mobile-col {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .mobile-grid-1 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .mobile-grid-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .mobile-p-4 {
+    padding: 16px !important;
+  }
+
+  .mobile-gap-4 {
+    gap: 16px !important;
+  }
+
+  .mobile-overflow-x {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  
+  /* Ensure tables don't compress too much */
+  .mobile-overflow-x table {
+    min-width: 800px;
+  }
+}

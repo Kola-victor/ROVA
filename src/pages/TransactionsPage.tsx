@@ -139,8 +139,8 @@ export default function TransactionsPage() {
   const filteredCats = categories.filter(c => c.type === form.type || c.type === 'both');
 
   return (
-    <div style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col mobile-gap-4" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>Transactions</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Track all your income and expenses</p>
@@ -153,7 +153,7 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
           { label: 'Total Income', value: incomeTotal, color: 'var(--success)' },
           { label: 'Total Expenses', value: expenseTotal, color: 'var(--error)' },
@@ -215,7 +215,8 @@ export default function TransactionsPage() {
             </p>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="mobile-overflow-x">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-elevated)' }}>
                 {['Date', 'Description', 'Category', 'Account', 'Amount', 'Status', ''].map(h => (
@@ -293,7 +294,8 @@ export default function TransactionsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         )}
       </Card>
 

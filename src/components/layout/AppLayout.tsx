@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Bell, Sparkles } from 'lucide-react';
+import { Bell, Sparkles, Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
+import { useMobile } from '../../hooks/useMobile';
+import { useTheme } from '../../contexts/ThemeContext';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
@@ -9,8 +11,11 @@ import Button from '../ui/Button';
 
 export default function AppLayout() {
   const { user, isStaff, staffData, refreshAuth } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
+  const isMobile = useMobile();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const needsSetup = isStaff && staffData?.status === 'pending';
   const [setupLoading, setSetupLoading] = useState(false);
@@ -48,13 +53,25 @@ export default function AppLayout() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg-base)' }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <div style={{
-          height: 48, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+          height: 48, flexShrink: 0, display: 'flex', alignItems: 'center', 
+          justifyContent: isMobile ? 'space-between' : 'flex-end',
           padding: '0 20px', borderBottom: '1px solid var(--bg-border)', background: 'var(--bg-surface)',
           gap: 8,
         }}>
+          {isMobile && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                style={{ color: 'var(--text-primary)', padding: 4, display: 'flex', alignItems: 'center' }}
+              >
+                <Menu size={20} />
+              </button>
+              <img src={theme === 'light' ? "/rova-light.png" : "/rova.png"} alt="ROVA Logo" style={{ height: 20, objectFit: 'contain' }} />
+            </div>
+          )}
           <button onClick={() => navigate('/notifications')}
             style={{ position: 'relative', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', transition: 'all 0.15s', background: 'transparent' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}

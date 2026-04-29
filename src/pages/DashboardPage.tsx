@@ -113,8 +113,8 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div style={{ padding: 24, maxWidth: 1200, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 1200, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>
             Good {getGreeting()}, {displayName.split(' ')[0]} 👋
@@ -133,14 +133,14 @@ export default function DashboardPage() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        <div className="mobile-grid-2 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
           {[1,2,3,4].map(i => (
             <div key={i} className="skeleton" style={{ height: 100 }} />
           ))}
         </div>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+          <div className="mobile-grid-2 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
             {statCards.map(card => (
               <Card key={card.label} hoverable>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 }}>
+          <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 }}>
             <Card>
               <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h3 style={{ fontSize: 14 }}>Cash Flow Overview</h3>
@@ -240,7 +240,7 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
+          <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
             <Card>
               <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h3 style={{ fontSize: 14 }}>Recent Transactions</h3>

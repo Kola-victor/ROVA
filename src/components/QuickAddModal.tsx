@@ -151,7 +151,7 @@ export default function QuickAddModal({ open, onClose }: Props) {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="mobile-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <Input
             label="Amount (₦)"
             type="number"
@@ -171,7 +171,7 @@ export default function QuickAddModal({ open, onClose }: Props) {
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="mobile-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>Category</label>
             <select
