@@ -83,7 +83,7 @@ export default function GeneralLedgerPage() {
               <button
                 onClick={() => toggleExpand(account.name)}
                 style={{
-                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
                   padding: '14px 16px', background: 'none', cursor: 'pointer',
                   transition: 'background 0.1s',
                 }}
@@ -97,7 +97,7 @@ export default function GeneralLedgerPage() {
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize', textAlign: 'left' }}>{account.type} · {account.entries.length} entries</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Total Debit</div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(account.totalDebit)}</div>
@@ -116,7 +116,7 @@ export default function GeneralLedgerPage() {
               </button>
 
               {expanded.has(account.name) && (
-                <div style={{ borderTop: '1px solid var(--bg-border)' }}>
+                <div className="mobile-overflow-x" style={{ borderTop: '1px solid var(--bg-border)' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'var(--bg-elevated)' }}>

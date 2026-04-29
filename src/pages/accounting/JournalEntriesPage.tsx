@@ -170,7 +170,7 @@ export default function JournalEntriesPage() {
               </div>
 
               {expanded.has(entry.id) && entry.lines && (
-                <div style={{ borderTop: '1px solid var(--bg-border)' }}>
+                <div className="mobile-overflow-x" style={{ borderTop: '1px solid var(--bg-border)' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'var(--bg-elevated)' }}>
@@ -211,39 +211,41 @@ export default function JournalEntriesPage() {
 
           <div>
             <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 8 }}>Debit / Credit Lines</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr auto', gap: 6 }}>
-                {['Account', 'Description', 'Debit (₦)', 'Credit (₦)', ''].map(h => (
-                  <div key={h} style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', paddingBottom: 2 }}>{h}</div>
-                ))}
-              </div>
-              {lines.map((line, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr auto', gap: 6, alignItems: 'center' }}>
-                  {coa.length > 0 ? (
-                    <select
-                      value={line.account_id}
-                      onChange={e => updateLine(i, 'account_id', e.target.value)}
-                      style={{ padding: '9px 10px', background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)', color: line.account_id ? 'var(--text-primary)' : 'var(--text-muted)', outline: 'none', fontSize: 13 }}
-                    >
-                      <option value="">Select account...</option>
-                      {coa.map(c => <option key={c.id} value={c.id}>{c.code} — {c.name}</option>)}
-                    </select>
-                  ) : (
-                    <Input placeholder="Account name..." value={line.account_name} onChange={e => updateLine(i, 'account_name', e.target.value)} />
-                  )}
-                  <Input placeholder="Line description..." value={line.description} onChange={e => updateLine(i, 'description', e.target.value)} />
-                  <Input type="number" min="0" step="0.01" placeholder="0.00" value={line.debit} onChange={e => updateLine(i, 'debit', e.target.value)} />
-                  <Input type="number" min="0" step="0.01" placeholder="0.00" value={line.credit} onChange={e => updateLine(i, 'credit', e.target.value)} />
-                  <button type="button" onClick={() => setLines(p => p.filter((_, j) => j !== i))}
-                    style={{ padding: 8, background: 'var(--error-dim)', borderRadius: 'var(--radius-sm)', color: 'var(--error)', display: 'flex', alignItems: 'center' }}>
-                    <X size={12} />
-                  </button>
+            <div className="mobile-overflow-x">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 600 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr auto', gap: 6 }}>
+                  {['Account', 'Description', 'Debit (₦)', 'Credit (₦)', ''].map(h => (
+                    <div key={h} style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', paddingBottom: 2 }}>{h}</div>
+                  ))}
                 </div>
-              ))}
-              <button type="button" onClick={() => setLines(p => [...p, { account_id: '', account_name: '', debit: '', credit: '', description: '' }])}
-                style={{ padding: '7px 12px', background: 'var(--bg-elevated)', border: '1px dashed var(--bg-border)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center', marginTop: 2 }}>
-                <Plus size={12} /> Add Line
-              </button>
+                {lines.map((line, i) => (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr auto', gap: 6, alignItems: 'center' }}>
+                    {coa.length > 0 ? (
+                      <select
+                        value={line.account_id}
+                        onChange={e => updateLine(i, 'account_id', e.target.value)}
+                        style={{ padding: '9px 10px', background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)', color: line.account_id ? 'var(--text-primary)' : 'var(--text-muted)', outline: 'none', fontSize: 13 }}
+                      >
+                        <option value="">Select account...</option>
+                        {coa.map(c => <option key={c.id} value={c.id}>{c.code} — {c.name}</option>)}
+                      </select>
+                    ) : (
+                      <Input placeholder="Account name..." value={line.account_name} onChange={e => updateLine(i, 'account_name', e.target.value)} />
+                    )}
+                    <Input placeholder="Line description..." value={line.description} onChange={e => updateLine(i, 'description', e.target.value)} />
+                    <Input type="number" min="0" step="0.01" placeholder="0.00" value={line.debit} onChange={e => updateLine(i, 'debit', e.target.value)} />
+                    <Input type="number" min="0" step="0.01" placeholder="0.00" value={line.credit} onChange={e => updateLine(i, 'credit', e.target.value)} />
+                    <button type="button" onClick={() => setLines(p => p.filter((_, j) => j !== i))}
+                      style={{ padding: 8, background: 'var(--error-dim)', borderRadius: 'var(--radius-sm)', color: 'var(--error)', display: 'flex', alignItems: 'center' }}>
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => setLines(p => [...p, { account_id: '', account_name: '', debit: '', credit: '', description: '' }])}
+                  style={{ padding: '7px 12px', background: 'var(--bg-elevated)', border: '1px dashed var(--bg-border)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center', marginTop: 2, width: 'max-content' }}>
+                  <Plus size={12} /> Add Line
+                </button>
+              </div>
             </div>
           </div>
 
