@@ -81,10 +81,11 @@ export default function GeneralLedgerPage() {
           {filtered.map(account => (
             <Card key={account.name} style={{ padding: 0, overflow: 'hidden' }}>
               <button
+                className="mobile-col"
                 onClick={() => toggleExpand(account.name)}
                 style={{
-                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
-                  padding: '14px 16px', background: 'none', cursor: 'pointer',
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '14px 16px', background: 'none', cursor: 'pointer', border: 'none',
                   transition: 'background 0.1s',
                 }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
@@ -97,16 +98,16 @@ export default function GeneralLedgerPage() {
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize', textAlign: 'left' }}>{account.type} · {account.entries.length} entries</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Total Debit</div>
+                <div className="mobile-ledger-stats" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                  <div style={{ textAlign: 'left', flex: 1 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Debit</div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(account.totalDebit)}</div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Total Credit</div>
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Credit</div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(account.totalCredit)}</div>
                   </div>
-                  <div style={{ textAlign: 'right', minWidth: 100 }}>
+                  <div style={{ textAlign: 'right', flex: 1 }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Balance</div>
                     <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: account.balance >= 0 ? 'var(--success)' : 'var(--error)' }}>
                       {formatCurrency(Math.abs(account.balance))}
