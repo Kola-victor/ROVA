@@ -161,3 +161,23 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
     min-width: 800px;
   }
 }
+
+/* --- Small Mobile Phones (Max 480px) --- */
+@media (max-width: 480px) {
+  .mobile-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .mobile-p-4 {
+    padding: 12px !important;
+  }
+
+  h1 {
+    font-size: 20px !important;
+  }
+
+  /* Reduce sizes for stat cards values */
+  .mobile-grid-2 > div > div:last-child {
+    font-size: 18px !important;
+  }
+}
