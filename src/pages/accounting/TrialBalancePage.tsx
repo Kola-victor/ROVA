@@ -52,8 +52,8 @@ export default function TrialBalancePage() {
   const isBalanced = Math.abs(totalDebit - totalCredit) < 0.01;
 
   return (
-    <div style={{ padding: 24, maxWidth: 900, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 900, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col mobile-gap-4" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>Trial Balance</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Verify that debits equal credits across all accounts</p>
@@ -101,8 +101,8 @@ export default function TrialBalancePage() {
         <div>{[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 44, marginBottom: 6 }} />)}</div>
       ) : (
         <Card style={{ padding: 0, overflow: 'hidden' }}>
-          <div className="mobile-overflow-x">
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="mobile-table-container">
+            <table className="transaction-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-elevated)' }}>
                 <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Account</th>
@@ -117,22 +117,24 @@ export default function TrialBalancePage() {
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                 >
-                  <td style={{ padding: '10px 16px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{line.account}</td>
-                  <td style={{ padding: '10px 16px' }}>
+                  <td className="mobile-tight-td" style={{ padding: '10px 16px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                    <div className="mobile-desc-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px' }}>{line.account}</div>
+                  </td>
+                  <td className="mobile-tight-td" style={{ padding: '10px 16px' }}>
                     <Badge variant={line.type === 'income' ? 'success' : line.type === 'expense' ? 'default' : 'info'}>{line.type}</Badge>
                   </td>
-                  <td style={{ padding: '10px 16px', textAlign: 'right', fontSize: 13, fontFamily: 'Space Grotesk, sans-serif', color: line.debit ? 'var(--success)' : 'var(--text-disabled)' }}>
+                  <td className="mobile-tight-td" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 13, fontFamily: 'Space Grotesk, sans-serif', color: line.debit ? 'var(--success)' : 'var(--text-disabled)' }}>
                     {line.debit ? formatCurrency(line.debit) : '—'}
                   </td>
-                  <td style={{ padding: '10px 16px', textAlign: 'right', fontSize: 13, fontFamily: 'Space Grotesk, sans-serif', color: line.credit ? 'var(--error)' : 'var(--text-disabled)' }}>
+                  <td className="mobile-tight-td" style={{ padding: '10px 16px', textAlign: 'right', fontSize: 13, fontFamily: 'Space Grotesk, sans-serif', color: line.credit ? 'var(--error)' : 'var(--text-disabled)' }}>
                     {line.credit ? formatCurrency(line.credit) : '—'}
                   </td>
                 </tr>
               ))}
               <tr style={{ borderTop: '2px solid var(--bg-border)', background: 'var(--bg-elevated)' }}>
-                <td colSpan={2} style={{ padding: '12px 16px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>TOTALS</td>
-                <td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, fontWeight: 800, color: 'var(--success)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(totalDebit)}</td>
-                <td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, fontWeight: 800, color: 'var(--error)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(totalCredit)}</td>
+                <td className="mobile-tight-td" colSpan={2} style={{ padding: '12px 16px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>TOTALS</td>
+                <td className="mobile-tight-td" style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, fontWeight: 800, color: 'var(--success)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(totalDebit)}</td>
+                <td className="mobile-tight-td" style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, fontWeight: 800, color: 'var(--error)', fontFamily: 'Space Grotesk, sans-serif' }}>{formatCurrency(totalCredit)}</td>
               </tr>
             </tbody>
           </table>
