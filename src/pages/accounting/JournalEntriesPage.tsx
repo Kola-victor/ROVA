@@ -117,8 +117,8 @@ export default function JournalEntriesPage() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col mobile-gap-4" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>Journal Entries</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Manual and automated double-entry records</p>
@@ -170,24 +170,31 @@ export default function JournalEntriesPage() {
               </div>
 
               {expanded.has(entry.id) && entry.lines && (
-                <div className="mobile-overflow-x" style={{ borderTop: '1px solid var(--bg-border)' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="mobile-table-container" style={{ borderTop: '1px solid var(--bg-border)' }}>
+                  <table className="transaction-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'var(--bg-elevated)' }}>
-                        {['Account', 'Description', 'Debit', 'Credit'].map(h => (
-                          <th key={h} style={{ padding: '8px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                        {[
+                          { label: 'Account' },
+                          { label: 'Description', hideMobile: true },
+                          { label: 'Debit' },
+                          { label: 'Credit' }
+                        ].map(h => (
+                          <th key={h.label} className={h.hideMobile ? 'mobile-hide' : ''} style={{ padding: '8px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h.label}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {entry.lines.map((line: JournalEntryLine) => (
                         <tr key={line.id} style={{ borderTop: '1px solid var(--bg-border)' }}>
-                          <td style={{ padding: '9px 16px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{line.account_name}</td>
-                          <td style={{ padding: '9px 16px', fontSize: 12, color: 'var(--text-muted)' }}>{line.description || '—'}</td>
-                          <td style={{ padding: '9px 16px', fontSize: 13, color: line.debit ? 'var(--success)' : 'var(--text-disabled)', fontFamily: 'Space Grotesk, sans-serif' }}>
+                          <td className="mobile-tight-td" style={{ padding: '9px 16px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                            <div className="mobile-desc-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>{line.account_name}</div>
+                          </td>
+                          <td className="mobile-hide" style={{ padding: '9px 16px', fontSize: 12, color: 'var(--text-muted)' }}>{line.description || '—'}</td>
+                          <td className="mobile-tight-td" style={{ padding: '9px 16px', fontSize: 13, color: line.debit ? 'var(--success)' : 'var(--text-disabled)', fontFamily: 'Space Grotesk, sans-serif' }}>
                             {line.debit ? formatCurrency(line.debit) : '—'}
                           </td>
-                          <td style={{ padding: '9px 16px', fontSize: 13, color: line.credit ? 'var(--error)' : 'var(--text-disabled)', fontFamily: 'Space Grotesk, sans-serif' }}>
+                          <td className="mobile-tight-td" style={{ padding: '9px 16px', fontSize: 13, color: line.credit ? 'var(--error)' : 'var(--text-disabled)', fontFamily: 'Space Grotesk, sans-serif' }}>
                             {line.credit ? formatCurrency(line.credit) : '—'}
                           </td>
                         </tr>
