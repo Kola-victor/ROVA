@@ -93,8 +93,8 @@ export default function ChartOfAccountsPage() {
   })).filter(g => g.accounts.length > 0);
 
   return (
-    <div style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 1000, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col mobile-gap-4" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>Chart of Accounts</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Customizable account structure for your books</p>
@@ -126,47 +126,59 @@ export default function ChartOfAccountsPage() {
                 <Badge variant={TYPE_COLORS[type]}>{type}</Badge>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{accs.length} account{accs.length !== 1 ? 's' : ''}</span>
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: 'var(--bg-elevated)' }}>
-                    {['Code', 'Name', 'Normal Balance', 'Description', ''].map(h => (
-                      <th key={h} style={{ padding: '8px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {accs.map((acc, i) => (
-                    <tr key={acc.id}
-                      style={{ borderTop: i > 0 ? '1px solid var(--bg-border)' : 'none' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                    >
-                      <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 600, color: 'var(--accent-light)', fontFamily: 'Space Grotesk, sans-serif' }}>{acc.code}</td>
-                      <td style={{ padding: '10px 16px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{acc.name}</td>
-                      <td style={{ padding: '10px 16px' }}>
-                        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: acc.normal_balance === 'debit' ? 'var(--success)' : 'var(--error)' }}>
-                          {acc.normal_balance}
-                        </span>
-                      </td>
-                      <td style={{ padding: '10px 16px', fontSize: 12, color: 'var(--text-muted)' }}>{acc.description || '—'}</td>
-                      <td style={{ padding: '10px 16px' }}>
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          <button onClick={() => openEdit(acc)}
-                            style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
-                          ><Pencil size={12} /></button>
-                          <button onClick={() => handleDelete(acc.id)}
-                            style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--error)'; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
-                          ><Trash2 size={12} /></button>
-                        </div>
-                      </td>
+              <div className="mobile-table-container">
+                <table className="transaction-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--bg-elevated)' }}>
+                      {[
+                        { label: 'Code' },
+                        { label: 'Name' },
+                        { label: 'Normal Balance', hideMobile: true },
+                        { label: 'Description', hideMobile: true },
+                        { label: '', className: 'mobile-actions' }
+                      ].map(h => (
+                        <th key={h.label} className={`${h.hideMobile ? 'mobile-hide' : ''} ${h.className || ''}`} style={{ padding: '8px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h.label}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {accs.map((acc, i) => (
+                      <tr key={acc.id}
+                        style={{ borderTop: i > 0 ? '1px solid var(--bg-border)' : 'none' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
+                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                      >
+                        <td className="mobile-tight-td" style={{ padding: '10px 16px', fontSize: 12, fontWeight: 600, color: 'var(--accent-light)', fontFamily: 'Space Grotesk, sans-serif' }}>{acc.code}</td>
+                        <td className="mobile-tight-td" style={{ padding: '10px 16px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                           <div className="mobile-desc-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' }}>{acc.name}</div>
+                        </td>
+                        <td className="mobile-hide" style={{ padding: '10px 16px' }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: acc.normal_balance === 'debit' ? 'var(--success)' : 'var(--error)' }}>
+                            {acc.normal_balance}
+                          </span>
+                        </td>
+                        <td className="mobile-hide" style={{ padding: '10px 16px', fontSize: 12, color: 'var(--text-muted)' }}>{acc.description || '—'}</td>
+                        <td className="mobile-tight-td mobile-actions" style={{ padding: '10px 16px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                            <button onClick={() => openEdit(acc)}
+                              title="Edit account"
+                              style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                            ><Pencil size={13} /></button>
+                            <button onClick={() => handleDelete(acc.id)}
+                              title="Delete account"
+                              style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--error)'; }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                            ><Trash2 size={13} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           ))}
         </div>
