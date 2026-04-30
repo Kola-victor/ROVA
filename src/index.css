@@ -167,6 +167,38 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   .mobile-overflow-x table {
     width: 100%;
   }
+
+  /* Compact transaction table for mobile */
+  .mobile-table-container {
+    width: 100%;
+    overflow: hidden; /* Prevent scrolling completely, ensure it fits */
+  }
+
+  .transaction-table {
+    table-layout: fixed; /* Force it to stay within container width */
+  }
+
+  .transaction-table th,
+  .transaction-table .mobile-tight-td {
+    padding: 10px 6px !important; /* Extremely tight padding */
+  }
+  
+  .transaction-table th {
+    font-size: 10px !important; /* Smaller header font */
+  }
+
+  .transaction-table .mobile-tight-td {
+    font-size: 11px !important;
+  }
+
+  .mobile-desc-text {
+    max-width: 110px !important; /* Prevent description from taking too much space */
+  }
+
+  .mobile-actions {
+    width: 60px; /* Constrain actions column width */
+    padding-right: 8px !important;
+  }
 }
 
 /* --- Small Mobile Phones (Max 480px) --- */

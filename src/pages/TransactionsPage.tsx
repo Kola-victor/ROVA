@@ -11,6 +11,8 @@ import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 
+
+
 type FilterType = 'all' | 'income' | 'expense';
 
 export default function TransactionsPage() {
@@ -215,16 +217,16 @@ export default function TransactionsPage() {
             </p>
           </div>
         ) : (
-          <div className="mobile-overflow-x">
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="mobile-table-container">
+            <table className="transaction-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-elevated)' }}>
                 {[
                   { label: 'Date' }, { label: 'Description' }, 
                   { label: 'Category', hideMobile: true }, { label: 'Account', hideMobile: true }, 
-                  { label: 'Amount' }, { label: 'Status' }, { label: '' }
+                  { label: 'Amount' }, { label: 'Status', hideMobile: true }, { label: '', className: 'mobile-actions' }
                 ].map(h => (
-                  <th key={h.label} className={h.hideMobile ? "mobile-hide" : ""} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <th key={h.label} className={`${h.hideMobile ? "mobile-hide" : ""} ${h.className || ""}`} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     {h.label}
                   </th>
                 ))}
@@ -241,22 +243,22 @@ export default function TransactionsPage() {
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                 >
-                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                  <td className="mobile-tight-td" style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{formatDate(tx.date)}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{formatTime(tx.created_at)}</div>
+                    <div className="mobile-hide" style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{formatTime(tx.created_at)}</div>
                   </td>
-                  <td style={{ padding: '12px 16px' }}>
+                  <td className="mobile-tight-td" style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{
+                      <div className="mobile-hide" style={{
                         width: 28, height: 28, borderRadius: 'var(--radius-sm)', flexShrink: 0,
                         background: tx.type === 'income' ? 'var(--success-dim)' : 'var(--error-dim)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         {tx.type === 'income' ? <ArrowUpRight size={13} color="var(--success)" /> : <ArrowDownRight size={13} color="var(--error)" />}
                       </div>
-                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }} className="mobile-desc-text">
                         {tx.description || 'No description'}
-                      </span>
+                      </div>
                     </div>
                   </td>
                   <td className="mobile-hide" style={{ padding: '12px 16px' }}>
@@ -265,16 +267,16 @@ export default function TransactionsPage() {
                   <td className="mobile-hide" style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-secondary)' }}>
                     {(tx.account as any)?.name || '—'}
                   </td>
-                  <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: 13, color: tx.type === 'income' ? 'var(--success)' : 'var(--error)', fontFamily: 'Space Grotesk, sans-serif', whiteSpace: 'nowrap' }}>
+                  <td className="mobile-tight-td" style={{ padding: '12px 16px', fontWeight: 600, fontSize: 13, color: tx.type === 'income' ? 'var(--success)' : 'var(--error)', fontFamily: 'Space Grotesk, sans-serif', whiteSpace: 'nowrap' }}>
                     {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                   </td>
-                  <td style={{ padding: '12px 16px' }}>
+                  <td className="mobile-hide" style={{ padding: '12px 16px' }}>
                     <Badge variant={tx.is_verified ? 'success' : 'default'}>
                       {tx.is_verified ? 'Verified' : 'Pending'}
                     </Badge>
                   </td>
-                  <td style={{ padding: '12px 16px' }}>
-                    <div style={{ display: 'flex', gap: 4 }}>
+                  <td className="mobile-tight-td mobile-actions" style={{ padding: '12px 16px', textAlign: 'right' }}>
+                    <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
                       <button
                         onClick={() => toggleVerify(tx)}
                         title={tx.is_verified ? 'Mark as unverified' : 'Mark as verified'}

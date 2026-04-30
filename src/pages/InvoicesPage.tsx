@@ -9,6 +9,7 @@ import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
+import { useMobile } from '../hooks/useMobile';
 
 type InvoiceStatus = Invoice['status'];
 
@@ -154,6 +155,7 @@ function downloadInvoicePDF(inv: Invoice, businessName: string) {
 }
 
 export default function InvoicesPage() {
+  const isMobile = useMobile();
   const { user, profile, isStaff } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -440,6 +442,44 @@ export default function InvoicesPage() {
           <div style={{ textAlign: 'center', padding: '48px 20px' }}>
             <Receipt size={32} color="var(--text-disabled)" style={{ margin: '0 auto 12px' }} />
             <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No invoices found</p>
+          </div>
+        ) : isMobile ? (
+          <div style={{ display: 'flex', flexDirection: 'column', padding: 16, gap: 12 }}>
+            {filtered.map(inv => (
+              <div key={inv.id} onClick={() => loadInvoiceWithItems(inv.id)} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, borderRadius: 'var(--radius-md)', border: '1px solid var(--bg-border)', background: 'var(--bg-primary)', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-light)' }}>{inv.invoice_number}</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginTop: 4 }}>{inv.client_name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+                      Due: <span style={{ color: new Date(inv.due_date) < new Date() && inv.status !== 'paid' ? 'var(--error)' : 'inherit' }}>{formatDate(inv.due_date)}</span>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', fontFamily: 'Space Grotesk, sans-serif' }}>
+                      {formatCurrency(inv.total)}
+                    </div>
+                    <div style={{ marginTop: 6, display: 'inline-block' }}><Badge variant={statusVariant[inv.status]}>{inv.status}</Badge></div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', borderTop: '1px dashed var(--bg-border)', paddingTop: 12 }} onClick={e => e.stopPropagation()}>
+                  {inv.status !== 'paid' && inv.status !== 'cancelled' && (
+                    <button
+                      onClick={() => updateStatus(inv.id, inv.status === 'draft' ? 'sent' : 'paid')}
+                      style={{ padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 500, color: 'var(--success)', background: 'var(--success-dim)' }}
+                    >
+                      {inv.status === 'draft' ? 'Mark Sent' : 'Mark Paid'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setConfirmDeleteId(inv.id)}
+                    style={{ padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 500, color: 'var(--error)', background: 'var(--error-dim)' }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="mobile-overflow-x">
