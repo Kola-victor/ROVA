@@ -105,13 +105,13 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div style={{ padding: 24, maxWidth: 900, animation: 'fadeIn 0.3s ease' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 900, animation: 'fadeIn 0.3s ease' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, marginBottom: 4 }}>Settings</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Manage your profile, accounts, and preferences</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 20 }}>
+      <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 20 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {sectionNav.map(({ key, label, icon: Icon }) => (
             <button
@@ -138,7 +138,7 @@ export default function SettingsPage() {
             <Card>
               <h3 style={{ fontSize: 15, marginBottom: 20 }}>Profile Information</h3>
               <form onSubmit={handleProfileSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <Input
                     label="Full Name"
                     value={profileForm.full_name}
@@ -242,7 +242,7 @@ export default function SettingsPage() {
 
           {section === 'accounts' && (
             <Card>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div className="mobile-col mobile-gap-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                 <h3 style={{ fontSize: 15 }}>Financial Accounts</h3>
                 <Button variant="primary" size="sm" icon={<Plus size={13} />} onClick={() => setShowAccountModal(true)}>
                   Add Account
@@ -259,7 +259,7 @@ export default function SettingsPage() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {accounts.map(acc => (
-                    <div key={acc.id} style={{
+                    <div key={acc.id} className="mobile-col" style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px', background: 'var(--bg-elevated)',
                       borderRadius: 'var(--radius-md)', border: '1px solid var(--bg-border)',
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                       <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)' }}>
                         {formatCurrency(acc.balance)}
                       </div>
-                      <div style={{ display: 'flex', gap: 4 }}>
+                      <div style={{ display: 'flex', gap: 4, alignSelf: 'flex-start' }}>
                         <button
                           onClick={() => toggleAccountActive(acc)}
                           style={{
