@@ -209,14 +209,14 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
                     { label: 'Item' },
                     { label: 'SKU', hideMobile: true },
                     { label: 'Category', hideMobile: true },
-                    { label: 'Cost Price', hideMobile: true },
+                    { label: 'Cost Price', width: '25%' },
                     { label: 'Sell Price', hideMobile: true },
                     { label: 'Stock' },
                     { label: 'Reorder Level', hideMobile: true },
                     { label: 'Stock Value', hideMobile: true },
-                    { label: '' }
+                    { label: '', width: '90px' }
                   ].map(h => (
-                    <th key={h.label} className={h.hideMobile ? 'mobile-hide' : 'mobile-tight-td'} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h.label}</th>
+                    <th key={h.label} className={h.hideMobile ? 'mobile-hide' : 'mobile-tight-td'} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', width: h.width || 'auto' }}>{h.label}</th>
                   ))}
                 </tr>
               </thead>
@@ -235,7 +235,7 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
                       </td>
                       <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{item.sku || '—'}</td>
                       <td className="mobile-hide" style={{ padding: '12px 14px' }}><Badge variant="default">{item.category || '—'}</Badge></td>
-                      <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(item.cost_price)}</td>
+                      <td className="mobile-tight-td" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(item.cost_price)}</td>
                       <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--success)' }}>{formatCurrency(item.selling_price)}</td>
                       <td className="mobile-tight-td" style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -248,8 +248,8 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
                       </td>
                       <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-muted)' }}>{item.reorder_level}</td>
                       <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 600, color: 'var(--accent-light)' }}>{formatCurrency(item.current_stock * item.cost_price)}</td>
-                      <td className="mobile-tight-td" style={{ padding: '12px 14px' }}>
-                        <div style={{ display: 'flex', gap: 4 }}>
+                      <td className="mobile-tight-td" style={{ padding: '12px 14px', paddingRight: 8 }}>
+                        <div style={{ display: 'flex', gap: 2 }}>
                           <button onClick={() => openMove(item.id)} title="Stock movement"
                             style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
                             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--success-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--success)'; }}
