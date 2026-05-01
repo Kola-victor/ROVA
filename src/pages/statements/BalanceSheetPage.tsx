@@ -116,7 +116,7 @@ export default function BalanceSheetPage() {
         ].map(s => (
           <Card key={s.label}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: s.color }}>{formatCurrency(Math.abs(s.value))}</div>
+            <div className="mobile-stat-value" style={{ fontSize: 20, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: s.color }}>{formatCurrency(Math.abs(s.value))}</div>
           </Card>
         ))}
       </div>

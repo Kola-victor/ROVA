@@ -143,6 +143,12 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
     grid-template-columns: repeat(2, 1fr) !important;
   }
   
+  .mobile-stat-value {
+    font-size: clamp(14px, 4.5vw, 24px) !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
   .mobile-p-4 {
     padding: 16px !important;
   }

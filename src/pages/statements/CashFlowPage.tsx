@@ -150,7 +150,7 @@ export default function CashFlowPage() {
               <s.icon size={13} color={s.value >= 0 ? 'var(--success)' : 'var(--error)'} />
               <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</span>
             </div>
-            <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: s.value >= 0 ? 'var(--success)' : 'var(--error)' }}>
+            <div className="mobile-stat-value" style={{ fontSize: 17, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: s.value >= 0 ? 'var(--success)' : 'var(--error)' }}>
               {s.value < 0 ? '-' : ''}{formatCurrency(Math.abs(s.value))}
             </div>
           </Card>
