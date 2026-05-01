@@ -210,7 +210,7 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
                     { label: 'SKU', hideMobile: true },
                     { label: 'Category', hideMobile: true },
                     { label: 'Cost Price', hideMobile: true },
-                    { label: 'Sell Price' },
+                    { label: 'Sell Price', hideMobile: true },
                     { label: 'Stock' },
                     { label: 'Reorder Level', hideMobile: true },
                     { label: 'Stock Value', hideMobile: true },
@@ -236,7 +236,7 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
                       <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{item.sku || '—'}</td>
                       <td className="mobile-hide" style={{ padding: '12px 14px' }}><Badge variant="default">{item.category || '—'}</Badge></td>
                       <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(item.cost_price)}</td>
-                      <td className="mobile-tight-td" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--success)' }}>{formatCurrency(item.selling_price)}</td>
+                      <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--success)' }}>{formatCurrency(item.selling_price)}</td>
                       <td className="mobile-tight-td" style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Space Grotesk', color: isOut ? 'var(--error)' : isLow ? 'var(--warning)' : 'var(--text-primary)' }}>
