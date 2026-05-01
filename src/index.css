@@ -143,6 +143,29 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
     grid-template-columns: 1fr !important;
   }
   
+  .mobile-nav-tabs {
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    gap: 12px !important;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  
+  .mobile-nav-tabs button {
+    flex-shrink: 0;
+    white-space: nowrap;
+    border-left: none !important;
+    border-bottom: 2px solid transparent;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+  
+  .mobile-nav-tabs button[data-active="true"] {
+    border-bottom-color: var(--accent-primary) !important;
+    color: var(--accent-primary) !important;
+  }
+  
   .mobile-grid-2 {
     grid-template-columns: repeat(2, 1fr) !important;
   }

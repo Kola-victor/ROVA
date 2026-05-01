@@ -112,10 +112,11 @@ export default function SettingsPage() {
       </div>
 
       <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 20 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className="mobile-nav-tabs" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {sectionNav.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
+              data-active={section === key}
               onClick={() => setSection(key)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px',
