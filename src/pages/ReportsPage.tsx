@@ -93,8 +93,8 @@ export default function ReportsPage() {
   ];
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 1100, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col mobile-gap-4" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>Financial Reports</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Insights and analytics for your finances</p>
@@ -121,12 +121,12 @@ export default function ReportsPage() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        <div className="mobile-grid-2 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
           {[1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height: 90 }} />)}
         </div>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+          <div className="mobile-grid-2 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
             {summaryStats.map(s => (
               <Card key={s.label} hoverable>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -135,12 +135,12 @@ export default function ReportsPage() {
                   </div>
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
-                <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: s.color }}>{s.value}</div>
+                <div className="mobile-stat-value" style={{ fontSize: 18, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: s.color }}>{s.value}</div>
               </Card>
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <div className="mobile-overflow-x" style={{ display: 'flex', gap: 8, marginBottom: 20, maxWidth: '100%' }}>
             <span style={{ fontSize: 13, color: 'var(--text-muted)', alignSelf: 'center', marginRight: 4 }}>Period:</span>
             {(['3m', '6m', '12m'] as const).map(p => (
               <button
@@ -159,7 +159,7 @@ export default function ReportsPage() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+          <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
             <Card>
               <h3 style={{ fontSize: 14, marginBottom: 16 }}>Income vs Expenses</h3>
               <ResponsiveContainer width="100%" height={220}>
