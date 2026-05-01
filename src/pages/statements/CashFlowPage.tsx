@@ -105,8 +105,8 @@ export default function CashFlowPage() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 900, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 900, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col mobile-gap-4" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>Cash Flow Statement</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Track the movement of cash in and out</p>
@@ -138,7 +138,7 @@ export default function CashFlowPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 24 }}>
+      <div className="mobile-grid-2 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 24 }}>
         {[
           { label: 'Operating', value: netOperating, icon: RefreshCw },
           { label: 'Investing', value: netInvesting, icon: ArrowUpRight },

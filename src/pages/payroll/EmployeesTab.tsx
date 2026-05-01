@@ -89,7 +89,7 @@ export default function EmployeesTab({ employees, onRefresh }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
         <Card>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Staff</div>
           <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)' }}>{employees.length}</div>
@@ -120,61 +120,72 @@ export default function EmployeesTab({ employees, onRefresh }: Props) {
         </Card>
       ) : (
         <Card style={{ padding: 0, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'var(--bg-elevated)' }}>
-                {['Name', 'Role / Dept', 'Type', 'Gross Salary', 'PAYE', 'Pension', 'Status', ''].map(h => (
-                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((emp, i) => {
-                const paye = emp.gross_salary * (emp.paye_rate / 100);
-                const pension = emp.gross_salary * (emp.pension_rate / 100);
-                return (
-                  <tr key={emp.id} style={{ borderTop: i > 0 ? '1px solid var(--bg-border)' : 'none' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '12px 16px' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{emp.full_name}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{emp.email}</div>
-                    </td>
-                    <td style={{ padding: '12px 16px' }}>
-                      <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{emp.role || '—'}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{emp.department || '—'}</div>
-                    </td>
-                    <td style={{ padding: '12px 16px' }}>
-                      <Badge variant="default">{emp.employment_type.replace('_', ' ')}</Badge>
-                    </td>
-                    <td style={{ padding: '12px 16px', fontSize: 13, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)', fontWeight: 600 }}>
-                      {formatCurrency(emp.gross_salary)}
-                    </td>
-                    <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--warning)' }}>{formatCurrency(paye)}</td>
-                    <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--info)' }}>{formatCurrency(pension)}</td>
-                    <td style={{ padding: '12px 16px' }}>
-                      <Badge variant={STATUS_VARIANT[emp.status]}>{emp.status}</Badge>
-                    </td>
-                    <td style={{ padding: '12px 16px' }}>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <button onClick={() => openEdit(emp)}
-                          style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
-                        ><Pencil size={12} /></button>
-                        <button onClick={() => handleDelete(emp.id)}
-                          style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--error)'; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
-                        ><Trash2 size={12} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="mobile-table-container">
+            <table className="transaction-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-elevated)' }}>
+                  {[
+                    { label: 'Name' },
+                    { label: 'Role / Dept', hideMobile: true },
+                    { label: 'Type', hideMobile: true },
+                    { label: 'Gross Salary' },
+                    { label: 'PAYE', hideMobile: true },
+                    { label: 'Pension', hideMobile: true },
+                    { label: 'Status' },
+                    { label: '' }
+                  ].map(h => (
+                    <th key={h.label} className={h.hideMobile ? 'mobile-hide' : 'mobile-tight-td'} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {employees.map((emp, i) => {
+                  const paye = emp.gross_salary * (emp.paye_rate / 100);
+                  const pension = emp.gross_salary * (emp.pension_rate / 100);
+                  return (
+                    <tr key={emp.id} style={{ borderTop: i > 0 ? '1px solid var(--bg-border)' : 'none' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                    >
+                      <td className="mobile-tight-td" style={{ padding: '12px 16px' }}>
+                        <div className="mobile-desc-text" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{emp.full_name}</div>
+                        <div className="mobile-desc-text" style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{emp.email}</div>
+                      </td>
+                      <td className="mobile-hide" style={{ padding: '12px 16px' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{emp.role || '—'}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{emp.department || '—'}</div>
+                      </td>
+                      <td className="mobile-hide" style={{ padding: '12px 16px' }}>
+                        <Badge variant="default">{emp.employment_type.replace('_', ' ')}</Badge>
+                      </td>
+                      <td className="mobile-tight-td" style={{ padding: '12px 16px', fontSize: 13, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)', fontWeight: 600 }}>
+                        {formatCurrency(emp.gross_salary)}
+                      </td>
+                      <td className="mobile-hide" style={{ padding: '12px 16px', fontSize: 12, color: 'var(--warning)' }}>{formatCurrency(paye)}</td>
+                      <td className="mobile-hide" style={{ padding: '12px 16px', fontSize: 12, color: 'var(--info)' }}>{formatCurrency(pension)}</td>
+                      <td className="mobile-tight-td" style={{ padding: '12px 16px' }}>
+                        <Badge variant={STATUS_VARIANT[emp.status]}>{emp.status}</Badge>
+                      </td>
+                      <td className="mobile-tight-td" style={{ padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button onClick={() => openEdit(emp)}
+                            style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                          ><Pencil size={12} /></button>
+                          <button onClick={() => handleDelete(emp.id)}
+                            style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--error)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                          ><Trash2 size={12} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 

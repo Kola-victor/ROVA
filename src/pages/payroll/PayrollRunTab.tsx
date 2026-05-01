@@ -161,12 +161,12 @@ export default function PayrollRunTab({ employees, runs, onRefresh }: Props) {
                     </div>
                   </div>
                 </button>
-                <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-                  <div style={{ textAlign: 'right' }}>
+                <div className="mobile-gap-4" style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+                  <div className="mobile-hide" style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Gross</div>
                     <div style={{ fontSize: 13, fontWeight: 600, fontFamily: 'Space Grotesk', color: 'var(--text-primary)' }}>{formatCurrency(run.total_gross)}</div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
+                  <div className="mobile-hide" style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>PAYE</div>
                     <div style={{ fontSize: 13, fontWeight: 600, fontFamily: 'Space Grotesk', color: 'var(--warning)' }}>{formatCurrency(run.total_paye)}</div>
                   </div>
@@ -177,26 +177,32 @@ export default function PayrollRunTab({ employees, runs, onRefresh }: Props) {
                 </div>
               </div>
               {expanded.has(run.id) && runPayslips[run.id] && (
-                <div style={{ borderTop: '1px solid var(--bg-border)' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="mobile-table-container" style={{ borderTop: '1px solid var(--bg-border)' }}>
+                  <table className="transaction-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'var(--bg-elevated)' }}>
-                        {['Employee', 'Gross', 'PAYE', 'Pension', 'Net Pay'].map(h => (
-                          <th key={h} style={{ padding: '8px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                        {[
+                          { label: 'Employee' },
+                          { label: 'Gross' },
+                          { label: 'PAYE', hideMobile: true },
+                          { label: 'Pension', hideMobile: true },
+                          { label: 'Net Pay' }
+                        ].map(h => (
+                          <th key={h.label} className={h.hideMobile ? 'mobile-hide' : 'mobile-tight-td'} style={{ padding: '8px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h.label}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {runPayslips[run.id].map((slip) => (
                         <tr key={slip.id} style={{ borderTop: '1px solid var(--bg-border)' }}>
-                          <td style={{ padding: '10px 16px' }}>
-                            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{(slip.employee as any)?.full_name}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{(slip.employee as any)?.role}</div>
+                          <td className="mobile-tight-td" style={{ padding: '10px 16px' }}>
+                            <div className="mobile-desc-text" style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(slip.employee as any)?.full_name}</div>
+                            <div className="mobile-desc-text" style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(slip.employee as any)?.role}</div>
                           </td>
-                          <td style={{ padding: '10px 16px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(slip.gross_salary)}</td>
-                          <td style={{ padding: '10px 16px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--warning)' }}>{formatCurrency(slip.paye_deduction)}</td>
-                          <td style={{ padding: '10px 16px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--info)' }}>{formatCurrency(slip.pension_deduction)}</td>
-                          <td style={{ padding: '10px 16px', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: 700, color: 'var(--success)' }}>{formatCurrency(slip.net_pay)}</td>
+                          <td className="mobile-tight-td" style={{ padding: '10px 16px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(slip.gross_salary)}</td>
+                          <td className="mobile-hide" style={{ padding: '10px 16px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--warning)' }}>{formatCurrency(slip.paye_deduction)}</td>
+                          <td className="mobile-hide" style={{ padding: '10px 16px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--info)' }}>{formatCurrency(slip.pension_deduction)}</td>
+                          <td className="mobile-tight-td" style={{ padding: '10px 16px', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: 700, color: 'var(--success)' }}>{formatCurrency(slip.net_pay)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -218,31 +224,39 @@ export default function PayrollRunTab({ employees, runs, onRefresh }: Props) {
 
           <div>
             <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 10 }}>Payroll Preview ({activeEmployees.length} active employees)</div>
-            <div style={{ border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="mobile-table-container" style={{ border: '1px solid var(--bg-border)', borderRadius: 'var(--radius-md)' }}>
+              <table className="transaction-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ background: 'var(--bg-elevated)' }}>
-                    {['Employee', 'Gross', 'PAYE', 'Pension', 'Net Pay'].map(h => (
-                      <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                    {[
+                      { label: 'Employee' },
+                      { label: 'Gross' },
+                      { label: 'PAYE', hideMobile: true },
+                      { label: 'Pension', hideMobile: true },
+                      { label: 'Net Pay' }
+                    ].map(h => (
+                      <th key={h.label} className={h.hideMobile ? 'mobile-hide' : 'mobile-tight-td'} style={{ padding: '8px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h.label}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {preview.map((p) => (
                     <tr key={p.emp.id} style={{ borderTop: '1px solid var(--bg-border)' }}>
-                      <td style={{ padding: '9px 14px', fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{p.emp.full_name}</td>
-                      <td style={{ padding: '9px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(p.emp.gross_salary)}</td>
-                      <td style={{ padding: '9px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--warning)' }}>{formatCurrency(p.paye)}</td>
-                      <td style={{ padding: '9px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--info)' }}>{formatCurrency(p.pension)}</td>
-                      <td style={{ padding: '9px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 700, color: 'var(--success)' }}>{formatCurrency(p.net)}</td>
+                      <td className="mobile-tight-td" style={{ padding: '9px 14px', fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>
+                        <div className="mobile-desc-text" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.emp.full_name}</div>
+                      </td>
+                      <td className="mobile-tight-td" style={{ padding: '9px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(p.emp.gross_salary)}</td>
+                      <td className="mobile-hide" style={{ padding: '9px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--warning)' }}>{formatCurrency(p.paye)}</td>
+                      <td className="mobile-hide" style={{ padding: '9px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--info)' }}>{formatCurrency(p.pension)}</td>
+                      <td className="mobile-tight-td" style={{ padding: '9px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 700, color: 'var(--success)' }}>{formatCurrency(p.net)}</td>
                     </tr>
                   ))}
                   <tr style={{ borderTop: '2px solid var(--bg-border)', background: 'var(--bg-elevated)' }}>
-                    <td style={{ padding: '10px 14px', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>TOTALS</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 700 }}>{formatCurrency(previewTotals.gross)}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 700, color: 'var(--warning)' }}>{formatCurrency(previewTotals.paye)}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 700, color: 'var(--info)' }}>{formatCurrency(previewTotals.pension)}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: 800, color: 'var(--success)' }}>{formatCurrency(previewTotals.net)}</td>
+                    <td className="mobile-tight-td" style={{ padding: '10px 14px', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>TOTALS</td>
+                    <td className="mobile-tight-td" style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 700 }}>{formatCurrency(previewTotals.gross)}</td>
+                    <td className="mobile-hide" style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 700, color: 'var(--warning)' }}>{formatCurrency(previewTotals.paye)}</td>
+                    <td className="mobile-hide" style={{ padding: '10px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 700, color: 'var(--info)' }}>{formatCurrency(previewTotals.pension)}</td>
+                    <td className="mobile-tight-td" style={{ padding: '10px 14px', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: 800, color: 'var(--success)' }}>{formatCurrency(previewTotals.net)}</td>
                   </tr>
                 </tbody>
               </table>

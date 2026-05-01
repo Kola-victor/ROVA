@@ -81,8 +81,8 @@ export default function BalanceSheetPage() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 800, animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="mobile-p-4" style={{ padding: 24, maxWidth: 800, animation: 'fadeIn 0.3s ease' }}>
+      <div className="mobile-col mobile-gap-4" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 22, marginBottom: 4 }}>Balance Sheet</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Assets, liabilities and equity as of today</p>
@@ -108,7 +108,7 @@ export default function BalanceSheetPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="mobile-grid-1 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
           { label: 'Total Assets', value: totalAssets, color: 'var(--success)' },
           { label: 'Total Liabilities', value: totalLiabilities, color: 'var(--error)' },
@@ -130,7 +130,7 @@ export default function BalanceSheetPage() {
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Balance Sheet · As of {today}</div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, borderBottom: '1px solid var(--bg-border)' }}>
+          <div className="mobile-grid-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, borderBottom: '1px solid var(--bg-border)' }}>
             <div style={{ borderRight: '1px solid var(--bg-border)' }}>
               <div style={{ padding: '10px 20px', background: 'var(--bg-elevated)', borderBottom: '1px solid var(--bg-border)' }}>
                 <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--success)' }}>Assets</span>

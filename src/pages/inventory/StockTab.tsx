@@ -136,7 +136,7 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="mobile-grid-2 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         <Card>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total SKUs</div>
           <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk', color: 'var(--text-primary)' }}>{items.length}</div>
@@ -196,66 +196,78 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
         </Card>
       ) : (
         <Card style={{ padding: 0, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'var(--bg-elevated)' }}>
-                {['Item', 'SKU', 'Category', 'Cost Price', 'Sell Price', 'Stock', 'Reorder Level', 'Stock Value', ''].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((item, i) => {
-                const isLow = item.current_stock <= item.reorder_level && item.current_stock > 0;
-                const isOut = item.current_stock === 0;
-                return (
-                  <tr key={item.id} style={{ borderTop: i > 0 ? '1px solid var(--bg-border)' : 'none' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '12px 14px' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.name}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{item.unit}</div>
-                    </td>
-                    <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{item.sku || '—'}</td>
-                    <td style={{ padding: '12px 14px' }}><Badge variant="default">{item.category || '—'}</Badge></td>
-                    <td style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(item.cost_price)}</td>
-                    <td style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--success)' }}>{formatCurrency(item.selling_price)}</td>
-                    <td style={{ padding: '12px 14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Space Grotesk', color: isOut ? 'var(--error)' : isLow ? 'var(--warning)' : 'var(--text-primary)' }}>
-                          {item.current_stock}
-                        </span>
-                        {isOut && <Badge variant="error">Out</Badge>}
-                        {isLow && !isOut && <Badge variant="warning">Low</Badge>}
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-muted)' }}>{item.reorder_level}</td>
-                    <td style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 600, color: 'var(--accent-light)' }}>{formatCurrency(item.current_stock * item.cost_price)}</td>
-                    <td style={{ padding: '12px 14px' }}>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <button onClick={() => openMove(item.id)} title="Stock movement"
-                          style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--success-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--success)'; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
-                        ><ArrowUpCircle size={13} /></button>
-                        <button onClick={() => openEdit(item)}
-                          style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
-                        ><Pencil size={12} /></button>
-                        <button onClick={() => handleDelete(item.id)}
-                          style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--error)'; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
-                        ><Trash2 size={12} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="mobile-table-container">
+            <table className="transaction-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-elevated)' }}>
+                  {[
+                    { label: 'Item' },
+                    { label: 'SKU', hideMobile: true },
+                    { label: 'Category', hideMobile: true },
+                    { label: 'Cost Price' },
+                    { label: 'Sell Price' },
+                    { label: 'Stock' },
+                    { label: 'Reorder Level', hideMobile: true },
+                    { label: 'Stock Value', hideMobile: true },
+                    { label: '' }
+                  ].map(h => (
+                    <th key={h.label} className={h.hideMobile ? 'mobile-hide' : 'mobile-tight-td'} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((item, i) => {
+                  const isLow = item.current_stock <= item.reorder_level && item.current_stock > 0;
+                  const isOut = item.current_stock === 0;
+                  return (
+                    <tr key={item.id} style={{ borderTop: i > 0 ? '1px solid var(--bg-border)' : 'none' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                    >
+                      <td className="mobile-tight-td" style={{ padding: '12px 14px' }}>
+                        <div className="mobile-desc-text" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                        <div className="mobile-desc-text" style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.unit}</div>
+                      </td>
+                      <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{item.sku || '—'}</td>
+                      <td className="mobile-hide" style={{ padding: '12px 14px' }}><Badge variant="default">{item.category || '—'}</Badge></td>
+                      <td className="mobile-tight-td" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(item.cost_price)}</td>
+                      <td className="mobile-tight-td" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--success)' }}>{formatCurrency(item.selling_price)}</td>
+                      <td className="mobile-tight-td" style={{ padding: '12px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Space Grotesk', color: isOut ? 'var(--error)' : isLow ? 'var(--warning)' : 'var(--text-primary)' }}>
+                            {item.current_stock}
+                          </span>
+                          {isOut && <Badge variant="error">Out</Badge>}
+                          {isLow && !isOut && <Badge variant="warning">Low</Badge>}
+                        </div>
+                      </td>
+                      <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-muted)' }}>{item.reorder_level}</td>
+                      <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 600, color: 'var(--accent-light)' }}>{formatCurrency(item.current_stock * item.cost_price)}</td>
+                      <td className="mobile-tight-td" style={{ padding: '12px 14px' }}>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button onClick={() => openMove(item.id)} title="Stock movement"
+                            style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--success-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--success)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                          ><ArrowUpCircle size={13} /></button>
+                          <button onClick={() => openEdit(item)}
+                            style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                          ><Pencil size={12} /></button>
+                          <button onClick={() => handleDelete(item.id)}
+                            style={{ padding: 5, borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-dim)'; (e.currentTarget as HTMLElement).style.color = 'var(--error)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}
+                          ><Trash2 size={12} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 
