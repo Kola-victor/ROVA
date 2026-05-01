@@ -161,8 +161,8 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
         </Card>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 6 }}>
+      <div className="mobile-col mobile-gap-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div className="mobile-overflow-x" style={{ display: 'flex', gap: 6, maxWidth: '100%' }}>
           {(['all', 'low_stock', 'out_of_stock'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               style={{
@@ -174,7 +174,12 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
               }}>{f.replace('_', ' ')}</button>
           ))}
         </div>
-        <Button variant="primary" icon={<Plus size={14} />} onClick={openNew}>Add Item</Button>
+        <div className="mobile-hide">
+          <Button variant="primary" icon={<Plus size={14} />} onClick={openNew}>Add Item</Button>
+        </div>
+        <div className="mobile-only" style={{ display: 'none' }}>
+          <Button variant="primary" icon={<Plus size={14} />} onClick={openNew} style={{ width: '100%' }}>Add Item</Button>
+        </div>
       </div>
 
       {lowStock.length > 0 && filter === 'all' && (
@@ -204,7 +209,7 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
                     { label: 'Item' },
                     { label: 'SKU', hideMobile: true },
                     { label: 'Category', hideMobile: true },
-                    { label: 'Cost Price' },
+                    { label: 'Cost Price', hideMobile: true },
                     { label: 'Sell Price' },
                     { label: 'Stock' },
                     { label: 'Reorder Level', hideMobile: true },
@@ -230,7 +235,7 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
                       </td>
                       <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{item.sku || '—'}</td>
                       <td className="mobile-hide" style={{ padding: '12px 14px' }}><Badge variant="default">{item.category || '—'}</Badge></td>
-                      <td className="mobile-tight-td" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(item.cost_price)}</td>
+                      <td className="mobile-hide" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--text-secondary)' }}>{formatCurrency(item.cost_price)}</td>
                       <td className="mobile-tight-td" style={{ padding: '12px 14px', fontSize: 13, fontFamily: 'Space Grotesk', color: 'var(--success)' }}>{formatCurrency(item.selling_price)}</td>
                       <td className="mobile-tight-td" style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
