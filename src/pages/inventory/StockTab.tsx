@@ -139,23 +139,23 @@ export default function StockTab({ items, suppliers, onRefresh }: Props) {
       <div className="mobile-grid-2 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         <Card>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total SKUs</div>
-          <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk', color: 'var(--text-primary)' }}>{items.length}</div>
+          <div className="mobile-stat-value" style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk', color: 'var(--text-primary)' }}>{items.length}</div>
         </Card>
         <Card>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Inventory Value</div>
-          <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'Space Grotesk', color: 'var(--accent-light)' }}>{formatCurrency(totalValue)}</div>
+          <div className="mobile-stat-value" style={{ fontSize: 18, fontWeight: 700, fontFamily: 'Space Grotesk', color: 'var(--accent-light)' }}>{formatCurrency(totalValue)}</div>
         </Card>
         <Card onClick={() => setFilter('low_stock')} hoverable>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Low Stock</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk', color: lowStock.length > 0 ? 'var(--warning)' : 'var(--text-primary)' }}>{lowStock.length}</div>
+            <div className="mobile-stat-value" style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk', color: lowStock.length > 0 ? 'var(--warning)' : 'var(--text-primary)' }}>{lowStock.length}</div>
             {lowStock.length > 0 && <AlertTriangle size={14} color="var(--warning)" />}
           </div>
         </Card>
         <Card onClick={() => setFilter('out_of_stock')} hoverable>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Out of Stock</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk', color: outOfStock.length > 0 ? 'var(--error)' : 'var(--text-primary)' }}>{outOfStock.length}</div>
+            <div className="mobile-stat-value" style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk', color: outOfStock.length > 0 ? 'var(--error)' : 'var(--text-primary)' }}>{outOfStock.length}</div>
             {outOfStock.length > 0 && <TrendingDown size={14} color="var(--error)" />}
           </div>
         </Card>
