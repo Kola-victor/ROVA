@@ -268,7 +268,7 @@ export default function TaxPage() {
             const taxInfo = NGN_TAX_TYPES.find(t => t.value === r.tax_type);
             return (
               <Card key={r.id} hoverable>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                <div className="mobile-hide" style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: 'var(--radius-md)',
                     background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -332,6 +332,54 @@ export default function TaxPage() {
                         <Clock size={11} /> Mark Filed
                       </button>
                     )}
+                  </div>
+                </div>
+
+                <div className="mobile-only" style={{ display: 'none' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <FileText size={18} color="var(--accent-light)" />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
+                          <span style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{taxInfo?.name || r.tax_type}</span>
+                          <Badge variant={statusBadge[r.status]}>{r.status}</Badge>
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          {formatDate(r.period_start)} — {formatDate(r.period_end)}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: 12, background: 'var(--bg-base)', borderRadius: 'var(--radius-md)', border: '1px solid var(--bg-border)' }}>
+                      <div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>Calculated Tax</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)' }}>{formatCurrency(r.calculated_tax)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>Taxable Income</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>{formatCurrency(r.taxable_income)}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        {taxInfo && <span>Rate: <strong style={{ color: 'var(--text-primary)' }}>{taxInfo.rate}</strong></span>}
+                      </div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {r.status !== 'paid' && (
+                          <button onClick={() => updateStatus(r.id, 'paid')} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: 'var(--success-dim)', color: 'var(--success)', borderRadius: 'var(--radius-sm)', fontSize: 11, fontWeight: 500, border: '1px solid rgba(34,197,94,0.2)' }}>
+                            <CheckCircle size={11} /> Mark Paid
+                          </button>
+                        )}
+                        {r.status === 'pending' && (
+                          <button onClick={() => updateStatus(r.id, 'filed')} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: 'var(--info-dim)', color: 'var(--info)', borderRadius: 'var(--radius-sm)', fontSize: 11, fontWeight: 500, border: '1px solid rgba(59,130,246,0.2)' }}>
+                            <Clock size={11} /> Mark Filed
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Card>
