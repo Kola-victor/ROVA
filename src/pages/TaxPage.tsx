@@ -213,7 +213,7 @@ export default function TaxPage() {
 
       <div className="mobile-grid-2 mobile-gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         <Card style={{ border: '1px solid var(--accent-border)', background: 'var(--accent-dim)' }}>
-          <div style={{ fontSize: 11, color: 'var(--accent-light)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Revenue (YTD)</div>
+          <div style={{ fontSize: 11, color: 'var(--accent-light)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Revenue</div>
           <div className="mobile-stat-value" style={{ fontSize: 18, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)', marginBottom: 4 }}>
             {formatCurrency(totalIncome)}
           </div>
@@ -227,7 +227,7 @@ export default function TaxPage() {
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{netProfit >= 0 ? 'Surplus' : 'Deficit'}</div>
         </Card>
         <Card style={{ border: '1px solid rgba(239,68,68,0.3)', background: 'var(--error-dim)' }}>
-          <div style={{ fontSize: 11, color: 'var(--error)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outstanding Liability</div>
+          <div style={{ fontSize: 11, color: 'var(--error)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Unpaid Tax</div>
           <div className="mobile-stat-value" style={{ fontSize: 18, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)', marginBottom: 4 }}>
             {formatCurrency(outstandingLiability)}
           </div>
@@ -268,7 +268,7 @@ export default function TaxPage() {
             const taxInfo = NGN_TAX_TYPES.find(t => t.value === r.tax_type);
             return (
               <Card key={r.id} hoverable>
-                <div className="mobile-col" style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: 'var(--radius-md)',
                     background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -285,20 +285,20 @@ export default function TaxPage() {
                       {taxInfo && <span style={{ marginLeft: 8, color: 'var(--accent-light)' }}>· {taxInfo.rate} · {taxInfo.authority}</span>}
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
+                  <div style={{ textAlign: 'left', minWidth: 100 }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>Calculated Tax</div>
                     <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif', color: 'var(--text-primary)' }}>
                       {formatCurrency(r.calculated_tax)}
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
+                  <div style={{ textAlign: 'left', minWidth: 100 }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>Taxable Income</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
                       {formatCurrency(r.taxable_income)}
                     </div>
                   </div>
                   {r.due_date && (
-                    <div style={{ textAlign: 'right' }}>
+                    <div style={{ textAlign: 'left', minWidth: 100 }}>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>Due</div>
                       <div style={{ fontSize: 12, color: new Date(r.due_date) < new Date() && r.status !== 'paid' ? 'var(--error)' : 'var(--text-secondary)' }}>
                         {formatDate(r.due_date)}
